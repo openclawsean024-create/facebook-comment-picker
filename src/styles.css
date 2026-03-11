@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bs-primary: #ff6666;
+  --bs-info: #64E9F5;
+  --bs-warning: #204272;
+  --bs-light: #f6f8fc;
+  --bs-dark: #0b1320;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply bg-light text-dark font-sans;
+  background-image:
+    radial-gradient(circle at 10% 0%, rgba(255,102,102,.22), transparent 22%),
+    radial-gradient(circle at 100% 8%, rgba(100,233,245,.18), transparent 20%),
+    linear-gradient(180deg, #fbfdff 0%, #eef5ff 52%, #f7fbff 100%);
+}
+
+.c-banner {
+  padding-top: 7rem;
+  position: relative;
+  isolation: isolate;
+}
+
+.c-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 72%;
+  border-radius: 0 0 3rem 3rem;
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.28));
+  z-index: -1;
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgba(32,66,114,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32,66,114,.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.nav-shell {
+  @apply rounded-full border border-warning/10 bg-white/85 backdrop-blur-xl shadow-panel;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, var(--bs-primary), #ff8b8b 55%, #ffd5d5 100%);
+  box-shadow: 0 18px 35px rgba(255, 102, 102, .24);
+}
+
+.glass-card {
+  @apply rounded-[2rem] border border-warning/10 bg-white/80 backdrop-blur-xl shadow-panel;
+}
+
+.section-card {
+  @apply rounded-[2rem] border border-warning/10 bg-white/90 shadow-panel;
+}
+
+.pill {
+  @apply inline-flex items-center rounded-full border border-warning/10 bg-white/90 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-warning;
+}
+
+.input-ui {
+  @apply w-full rounded-[1.55rem] border border-warning/10 bg-white px-5 py-4 text-[15px] text-dark outline-none transition duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+.btn-primary {
+  @apply rounded-full bg-primary px-6 py-3.5 font-black text-white transition duration-200 hover:-translate-y-0.5;
+  box-shadow: 0 18px 34px rgba(255,102,102,.22);
+}
+
+.btn-secondary {
+  @apply rounded-full border border-warning/10 bg-white px-6 py-3.5 font-black text-warning transition duration-200 hover:-translate-y-0.5;
+}
+
+.btn-info {
+  @apply rounded-full px-6 py-3.5 font-black text-warning transition duration-200 hover:-translate-y-0.5;
+  background: rgba(100, 233, 245, .18);
+  border: 1px solid rgba(100, 233, 245, .3);
+}
+
+.icon-chip {
+  @apply inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-warning/10 bg-white text-warning shadow-soft;
+}
+
+.metric-card {
+  @apply rounded-[1.8rem] border border-warning/10 bg-white px-5 py-6 shadow-soft;
+}
+
+.clone-card {
+  @apply rounded-[1.8rem] border border-warning/10 bg-white/95 p-6 shadow-soft transition duration-300 hover:-translate-y-1;
+}
+
+.footer-shell {
+  background: linear-gradient(180deg, rgba(32,66,114,.98), rgba(10,25,48,.98));
+}
+
+.reveal-up {
+  animation: revealUp .8s ease both;
+}
+
+.reveal-right {
+  animation: revealRight .8s ease both;
+}
+
+.floaty {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translate3d(0, 30px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes revealRight {
+  from { opacity: 0; transform: translate3d(42px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulseWinner {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,102,102,0); }
+  50% { transform: scale(1.02); box-shadow: 0 18px 55px rgba(255,102,102,0.28); }
+}
+
+.animate-pulse-winner { animation: pulseWinner 1.2s ease-in-out infinite; }
