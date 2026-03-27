@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const SAMPLE_URL = 'https://www.facebook.com/share/p/1KaANBEDa6/';
+const STORAGE_KEY = 'fb_comments_v1';
 const sampleComments = `王小明 | 我要抽大獎\n陳小華 | Logitech 福袋買起來\n林小美 | 我要抽雲端遊戲掌機\n王小明 | 再留一次\n張阿強 | 測試留言\n李小芳 | 我要抽大獎\n周大成 | 取消參加\n黃小琪 | 好想要這個禮物`;
 
 const parseList = (value) => value.split(',').map((v) => v.trim()).filter(Boolean);
