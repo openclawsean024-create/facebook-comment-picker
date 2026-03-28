@@ -457,7 +457,7 @@ export default function App() {
               ].map(([label, value, desc]) => (
                 <div key={label} className="metric-card">
                   <div className="text-xs font-black uppercase tracking-[0.18em] text-warning/45">{label}</div>
-                  <div className="mt-3 text-5xl font-light leading-none text-warning">{value}</div>
+                  <div className="mt-3 text-5xl font-light leading-none text-warning whitespace-nowrap">{value}</div>
                   <div className="mt-3 text-sm leading-7 text-warning/65">{desc}</div>
                 </div>
               ))}
