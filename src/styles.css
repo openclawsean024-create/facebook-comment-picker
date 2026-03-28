@@ -61,7 +61,7 @@ body {
 }
 
 .pill {
-  @apply inline-flex items-center rounded-full border border-warning/10 bg-white/90 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-warning;
+  @apply inline-flex items-center rounded-full border border-warning/10 bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-warning whitespace-nowrap;
 }
 
 .input-ui {

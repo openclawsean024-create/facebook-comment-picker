@@ -371,15 +371,15 @@ export default function App() {
       <header className="container sticky top-4 z-30 pt-5">
         <div className="nav-shell flex items-center justify-between gap-4 px-4 py-3 md:px-6">
           <div className="flex items-center gap-4">
-            <div className="brand-mark flex h-12 w-12 items-center justify-center rounded-[1.1rem] text-white">{iconSvgs.spark}</div>
+            <div className="brand-mark flex h-10 w-10 items-center justify-center rounded-[1.1rem] text-white">{iconSvgs.spark}</div>
             <div>
-              <div className="text-xs font-black uppercase tracking-[0.25em] text-primary">Comment Flow</div>
-              <div className="text-sm text-warning/70">Facebook Giveaway Frontend</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary whitespace-nowrap">Comment Flow</div>
+              <div className="text-[10px] text-warning/70 whitespace-nowrap">社群互動抽獎工具</div>
             </div>
           </div>
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-black uppercase tracking-[0.14em] text-warning/55 transition hover:text-warning">
+              <a key={item} href={`#${item.toLowerCase()}`} className="hidden md:block text-xs font-black uppercase tracking-[0.14em] text-warning/55 transition hover:text-warning whitespace-nowrap">
                 {item}
               </a>
             ))}
@@ -400,14 +400,14 @@ export default function App() {
               </div>
             ) : (
               <button
-                className="rounded-full bg-[#1877f2] px-5 py-2.5 font-black text-white transition hover:-translate-y-0.5 hover:bg-[#166fe5]"
+                className="rounded-full bg-primary px-4 py-2 text-xs font-black text-white transition hover:-translate-y-0.5"
                 onClick={handleFbLogin}
                 disabled={fbLoading}
               >
                 {fbLoading ? '連接中...' : 'Facebook 登入'}
               </button>
             )}
-            <button className="btn-primary hidden lg:block" onClick={drawNow}>Launch Picker</button>
+            <button className="btn-primary hidden lg:block text-sm" onClick={drawNow}>Launch Picker</button>
           </div>
         </div>
       </header>
@@ -418,7 +418,7 @@ export default function App() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="pill">Facebook 留言抽獎工具</span>
             </div>
-            <h1 className="mt-6 max-w-4xl text-display-1 font-light leading-[1.1] text-warning">
+            <h1 className="mt-6 max-w-4xl text-3xl md:text-4xl lg:text-display-1 font-light leading-tight text-warning">
               把 Facebook 抽獎頁，換成目標站的完整品牌節奏。
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-warning/75">
@@ -445,7 +445,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-black uppercase tracking-[0.18em] text-warning/55">Live Metrics</div>
-                <div className="mt-2 text-2xl font-light text-warning">即時抽獎數據</div>
+                <div className="mt-2 text-xl md:text-2xl font-light text-warning">即時抽獎數據</div>
               </div>
               <div className="icon-chip floaty">{iconSvgs.spark}</div>
             </div>
@@ -471,7 +471,7 @@ export default function App() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-primary">Prize Setup</div>
-              <div className="mt-2 text-3xl font-light text-warning">設定獎品清單與數量，讓抽獎結果直接對應獎項。</div>
+              <div className="mt-2 text-2xl md:text-3xl font-light text-warning">設定獎品清單與數量，讓抽獎結果直接對應獎項。</div>
               <div className="mt-3 max-w-3xl text-sm leading-8 text-warning/72">使用「獎品名稱 | 數量」格式建立獎項，例如：頭獎 | 1、貳獎 | 2。系統會依照獎品總數自動配置中獎名單。</div>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -499,7 +499,7 @@ export default function App() {
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-warning/55">Data Input</div>
-              <h2 className="mt-2 text-3xl font-light text-warning">匯入留言與設定抽獎條件</h2>
+              <h2 className="mt-2 text-2xl md:text-3xl font-light text-warning">匯入留言與設定抽獎條件</h2>
             </div>
             <div className="text-sm leading-7 text-warning/70">支援貼文匯入、條件篩選與獎項配置。</div>
           </div>
@@ -577,7 +577,7 @@ export default function App() {
           <div className="flex items-end justify-between gap-3">
             <div>
               <div className="pill border-primary/15 bg-primary/10 text-primary">{winners.length ? `已抽出 ${winners.length} 位` : '尚未抽獎'}</div>
-              <h2 className="mt-3 text-3xl font-light text-warning">Draw Result</h2>
+              <h2 className="mt-3 text-2xl md:text-3xl font-light text-warning">Draw Result</h2>
             </div>
             <div className="text-sm leading-7 text-warning/70">候選池與中獎名單同步顯示</div>
           </div>
@@ -681,7 +681,7 @@ export default function App() {
                 <div className="brand-mark flex h-12 w-12 items-center justify-center rounded-[1.1rem] text-white">{iconSvgs.spark}</div>
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.25em] text-info">Comment Flow</div>
-                  <div className="mt-1 text-3xl font-light">Facebook 留言抽獎器</div>
+                  <div className="mt-1 text-xl md:text-3xl font-light">社群互動抽獎工具</div>
                 </div>
               </div>
               <p className="mt-5 max-w-2xl text-sm leading-8 text-white/72">
@@ -717,7 +717,7 @@ export default function App() {
                       {presentationWinners[presentationWinners.length - 1]?.prize}
                     </div>
                   )}
-                  <div className="mt-6 text-[clamp(3rem,8vw,5.5rem)] font-black leading-none tracking-[-0.05em] text-white drop-shadow-[0_14px_40px_rgba(0,0,0,.5)]">{stageName}</div>
+                  <div className="mt-6 text-4xl md:text-[clamp(3rem,8vw,5.5rem)] font-black leading-none tracking-[-0.05em] text-white drop-shadow-[0_14px_40px_rgba(0,0,0,.5)]">{stageName}</div>
                   <div className="mt-5 max-w-md text-lg leading-8 text-white/86">{stageComment}</div>
                 </div>
               </div>

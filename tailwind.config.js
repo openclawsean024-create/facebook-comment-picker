@@ -22,7 +22,7 @@ export default {
         sans: ['Lato', 'sans-serif']
       },
       fontSize: {
-        'display-1': 'clamp(2rem, 5vw, 4.5rem)'
+        'display-1': 'clamp(2.5rem, 6vw, 4.5rem)'
       },
       boxShadow: {
         soft: '0 24px 70px rgba(20, 41, 73, 0.18)',
