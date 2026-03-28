@@ -115,7 +115,76 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }
   });
+  // Facebook OAuth 登入狀態
+  const [fbUser, setFbUser] = useState(null);
+  const [fbAccessToken, setFbAccessToken] = useState(null);
+  const [fbLoading, setFbLoading] = useState(false);
   const timerRef = useRef(null);
+
+  // 檢查 FB 登入狀態（頁面載入時）
+  useEffect(() => {
+    const checkFbStatus = () => {
+      if (window.FB) {
+        FB.getLoginStatus((response) => {
+          if (response.status === 'connected') {
+            fetchFbUserInfo(response.authResponse.accessToken);
+          }
+        });
+      }
+    };
+    // 等 FB SDK 載入後再檢查
+    const interval = setInterval(() => {
+      if (window.FB) {
+        checkFbStatus();
+        clearInterval(interval);
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchFbUserInfo = (accessToken) => {
+    setFbLoading(true);
+    FB.api('/me', { fields: 'name,picture', access_token: accessToken }, (resp) => {
+      if (!resp.error) {
+        setFbUser({ name: resp.name, picture: resp.picture?.data?.url });
+        setFbAccessToken(accessToken);
+      }
+      setFbLoading(false);
+    });
+  };
+
+  const handleFbLogin = () => {
+    if (!window.FB) {
+      setFetchMeta('Facebook SDK 尚未載入，請稍後再試。');
+      return;
+    }
+    setFbLoading(true);
+    FB.login(
+      (response) => {
+        if (response.authResponse) {
+          fetchFbUserInfo(response.authResponse.accessToken);
+          setFetchMeta('Facebook 登入成功！現在可以選擇要抓取留言的粉專貼文。');
+        } else {
+          setFetchMeta('Facebook 登入已取消或失敗。');
+          setFbLoading(false);
+        }
+      },
+      {
+        scope: 'pages_read_engagement,read_custom_friendlists',
+        return_scopes: true,
+      }
+    );
+  };
+
+  const handleFbLogout = () => {
+    if (window.FB) {
+      FB.logout(() => {
+        setFbUser(null);
+        setFbAccessToken(null);
+        setFetchMeta('已登出 Facebook。');
+      });
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(drawSessions));
@@ -315,7 +384,31 @@ export default function App() {
               </a>
             ))}
           </nav>
-          <button className="btn-primary hidden lg:block" onClick={drawNow}>Launch Picker</button>
+          <div className="flex items-center gap-3">
+            {fbUser ? (
+              <div className="flex items-center gap-3">
+                {fbUser.picture && (
+                  <img src={fbUser.picture} alt={fbUser.name} className="h-9 w-9 rounded-full border-2 border-primary/30" />
+                )}
+                <span className="hidden text-sm font-bold text-warning lg:block">{fbUser.name}</span>
+                <button
+                  className="rounded-full border border-warning/15 bg-warning/8 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-warning transition hover:bg-warning/15"
+                  onClick={handleFbLogout}
+                >
+                  登出
+                </button>
+              </div>
+            ) : (
+              <button
+                className="rounded-full bg-[#1877f2] px-5 py-2.5 font-black text-white transition hover:-translate-y-0.5 hover:bg-[#166fe5]"
+                onClick={handleFbLogin}
+                disabled={fbLoading}
+              >
+                {fbLoading ? '連接中...' : 'Facebook 登入'}
+              </button>
+            )}
+            <button className="btn-primary hidden lg:block" onClick={drawNow}>Launch Picker</button>
+          </div>
         </div>
       </header>
 
@@ -325,9 +418,8 @@ export default function App() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="pill">Facebook 留言抽獎工具</span>
             </div>
-            <h1 className="mt-6 max-w-4xl text-display-1 font-light leading-[0.92] text-warning">
-              把 Facebook 抽獎頁，<br />
-              <span className="text-primary">換成目標站的完整品牌節奏。</span>
+            <h1 className="mt-6 max-w-4xl text-display-1 font-light leading-[1.1] text-warning">
+              把 Facebook 抽獎頁，換成目標站的完整品牌節奏。
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-warning/75">
               專為 Facebook 單篇貼文留言活動設計的抽獎工具。支援貼文留言匯入、關鍵字篩選、黑名單排除、獎品配置與中獎揭曉，讓你從整理名單到公布結果都能在同一頁完成。
