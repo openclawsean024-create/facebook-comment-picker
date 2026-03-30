@@ -418,7 +418,7 @@ export default function App() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="pill">Facebook 留言抽獎工具</span>
             </div>
-            <h1 className="mt-6 max-w-4xl text-3xl md:text-4xl lg:text-display-1 font-light leading-tight text-warning">
+            <h1 className="mt-6 max-w-4xl text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-warning">
               把 Facebook 抽獎頁，換成目標站的完整品牌節奏。
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-warning/75">
@@ -471,7 +471,7 @@ export default function App() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-primary">Prize Setup</div>
-              <div className="mt-2 text-2xl md:text-3xl font-light text-warning">設定獎品清單與數量，讓抽獎結果直接對應獎項。</div>
+              <div className="mt-2 text-lg md:text-xl font-light text-warning">設定獎品清單與數量，讓抽獎結果直接對應獎項。</div>
               <div className="mt-3 max-w-3xl text-sm leading-8 text-warning/72">使用「獎品名稱 | 數量」格式建立獎項，例如：頭獎 | 1、貳獎 | 2。系統會依照獎品總數自動配置中獎名單。</div>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -499,7 +499,7 @@ export default function App() {
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-warning/55">Data Input</div>
-              <h2 className="mt-2 text-2xl md:text-3xl font-light text-warning">匯入留言與設定抽獎條件</h2>
+              <h2 className="mt-2 text-lg md:text-xl font-light text-warning">匯入留言與設定抽獎條件</h2>
             </div>
             <div className="text-sm leading-7 text-warning/70">支援貼文匯入、條件篩選與獎項配置。</div>
           </div>
@@ -577,7 +577,7 @@ export default function App() {
           <div className="flex items-end justify-between gap-3">
             <div>
               <div className="pill border-primary/15 bg-primary/10 text-primary">{winners.length ? `已抽出 ${winners.length} 位` : '尚未抽獎'}</div>
-              <h2 className="mt-3 text-2xl md:text-3xl font-light text-warning">Draw Result</h2>
+              <h2 className="mt-3 text-xl md:text-2xl font-light text-warning">Draw Result</h2>
             </div>
             <div className="text-sm leading-7 text-warning/70">候選池與中獎名單同步顯示</div>
           </div>
@@ -589,7 +589,7 @@ export default function App() {
                   <div>
                     <div className="text-xs font-black uppercase tracking-[0.2em] text-primary">Winner {idx + 1}</div>
                     <div className="mt-3 text-sm font-black uppercase tracking-[0.18em] text-info">{winner.prize || '未指定獎項'}</div>
-                    <div className="mt-3 text-3xl font-light text-warning">{winner.name}</div>
+                    <div className="mt-3 text-2xl font-light text-warning">{winner.name}</div>
                   </div>
                   <div className="icon-chip">{iconSvgs.trophy}</div>
                 </div>
@@ -599,7 +599,7 @@ export default function App() {
           </div>
 
           <div className="mt-8 flex items-center justify-between">
-            <h3 className="text-2xl font-light text-warning">Candidate Pool</h3>
+            <h3 className="text-xl font-light text-warning">Candidate Pool</h3>
             <div className="text-sm text-warning/60">{filteredEntries.length} 筆</div>
           </div>
           <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-2">
@@ -619,7 +619,7 @@ export default function App() {
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-primary">Audit Trail</div>
-              <h3 className="mt-2 text-3xl font-light text-warning">最近的抽獎紀錄</h3>
+              <h3 className="mt-2 text-xl font-light text-warning">最近的抽獎紀錄</h3>
             </div>
             <div className="text-sm leading-7 text-warning/70">保存最近 20 筆抽獎 session，便於對外說明與內部備查。</div>
           </div>
@@ -653,7 +653,7 @@ export default function App() {
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-primary">Update Log</div>
-              <h3 className="mt-2 text-3xl font-light text-warning">功能更新紀錄</h3>
+              <h3 className="mt-2 text-xl font-light text-warning">功能更新紀錄</h3>
             </div>
             <div className="text-sm leading-7 text-warning/70">最近新增的功能會顯示在這裡。</div>
           </div>
@@ -717,7 +717,7 @@ export default function App() {
                       {presentationWinners[presentationWinners.length - 1]?.prize}
                     </div>
                   )}
-                  <div className="mt-6 text-4xl md:text-[clamp(3rem,8vw,5.5rem)] font-black leading-none tracking-[-0.05em] text-white drop-shadow-[0_14px_40px_rgba(0,0,0,.5)]">{stageName}</div>
+                  <div className="mt-6 text-3xl md:text-4xl font-black leading-none tracking-[-0.04em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,.5)]">{stageName}</div>
                   <div className="mt-5 max-w-md text-lg leading-8 text-white/86">{stageComment}</div>
                 </div>
               </div>
@@ -730,7 +730,7 @@ export default function App() {
                   <div key={`${winner.name}-${idx}`} className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5 shadow-[0_12px_34px_rgba(0,0,0,.22)]">
                     <div className="text-sm font-black uppercase tracking-[0.16em] text-info">#{idx + 1}</div>
                     <div className="mt-2 inline-flex rounded-full border border-primary/25 bg-primary/14 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-[#ffd7d7]">{winner.prize || '未指定獎項'}</div>
-                    <div className="mt-3 text-3xl font-black tracking-[-0.03em] text-white">{winner.name}</div>
+                    <div className="mt-3 text-2xl font-black tracking-[-0.03em] text-white">{winner.name}</div>
                     <div className="mt-2 text-sm leading-7 text-white/80">{winner.comment}</div>
                   </div>
                 ))}
