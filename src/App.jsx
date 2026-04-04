@@ -494,8 +494,13 @@ export default function App() {
         </div>
       </section>
 
-      <main className="container grid gap-6 pb-16 lg:grid-cols-[1.05fr_.95fr]">
-        <section id="filters" className="section-card p-6 lg:p-8">
+      <section id="main-content" className="container pb-8">
+        <div className="mb-6 section-card p-6">
+          <div className="text-sm font-black uppercase tracking-[0.18em] text-primary">Step 1+2+3</div>
+          <div className="mt-2 text-lg md:text-xl font-light text-warning">留言匯入與抽獎設定</div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
+          <section id="filters" className="section-card p-6 lg:p-8">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.18em] text-warning/55">Data Input</div>
@@ -612,7 +617,8 @@ export default function App() {
             )) : <div className="rounded-[1.5rem] border border-warning/10 bg-white p-5 text-warning/70">目前沒有可抽獎的有效留言。</div>}
           </div>
         </section>
-      </main>
+      </div>
+      </section>
 
       <section className="container pb-12">
         <div className="section-card p-6 lg:p-8 mb-6">
