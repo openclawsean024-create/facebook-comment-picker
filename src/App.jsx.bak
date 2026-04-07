@@ -100,8 +100,6 @@ export default function App() {
   const [requiredKeywords, setRequiredKeywords] = useState('');
   const [blacklistNames, setBlacklistNames] = useState('');
   const [blacklistKeywords, setBlacklistKeywords] = useState('');
-  const [rapidApiKey, setRapidApiKey] = useState('');
-  const [scrapeSource, setScrapeSource] = useState('graph-api');
   const [fetchMeta, setFetchMeta] = useState('你也可以直接把整理好的留言名單貼進來。');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [prizeInput, setPrizeInput] = useState('頭獎 | 1\n貳獎 | 2\n參加獎 | 3');
@@ -240,12 +238,12 @@ export default function App() {
     setLoadingFetch(true);
     setFetchMeta('正在擷取公開貼文留言資料，會盡量抓更多公開可見留言...');
     try {
-      const response = await fetch(`/api/fetch-comments?url=${encodeURIComponent(postUrl.trim())}&scrapeSource=${scrapeSource}&rapidApiKey=${encodeURIComponent(rapidApiKey)}`);
+      const response = await fetch(`/api/fetch-comments?url=${encodeURIComponent(postUrl.trim())}`);
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || '抓取失敗');
       setCommentInput(data.comments.map((item) => `${item.name} | ${item.comment}`).join('\n'));
       setPostTitle((prev) => prev || data.postTitle || 'Facebook 公開貼文');
-      setFetchMeta(`已抓到 ${data.extractedCount} 筆可公開取得留言（${scrapeSource === 'rapid-api' ? 'RapidAPI' : 'Graph API'}）；貼文頁顯示 ${data.commentCountText || '未知'}。${data.note || ''}`);
+      setFetchMeta(`已抓到 ${data.extractedCount} 筆可公開取得留言；貼文頁顯示 ${data.commentCountText || '未知'}。${data.note || ''}`);
     } catch (error) {
       setFetchMeta(`抓取失敗：${error.message}。你仍可改用手動貼上留言名單。`);
     } finally {
@@ -520,19 +518,6 @@ export default function App() {
               <button className="btn-primary" onClick={fetchComments} disabled={loadingFetch}>{loadingFetch ? '抓取中...' : '自動抓取留言'}</button>
               <button className="btn-info" onClick={() => setPostUrl(SAMPLE_URL)}>載入示範貼文網址</button>
             </div>
-            <div className="mt-3">
-              <label className="mb-2 block text-sm font-bold text-warning">抓取方式</label>
-              <div className="flex gap-2">
-                <button onClick={() => setScrapeSource('graph-api')} className={`flex-1 rounded-full py-2 px-3 text-xs font-bold transition-all ${scrapeSource === 'graph-api' ? 'bg-[#1877f2] text-white' : 'bg-[#f0f2f5] text-[#1877f2]/60'}`}>Graph API</button>
-                <button onClick={() => setScrapeSource('rapid-api')} className={`flex-1 rounded-full py-2 px-3 text-xs font-bold transition-all ${scrapeSource === 'rapid-api' ? 'bg-[#ff6b35] text-white' : 'bg-[#f0f2f5] text-[#ff6b35]/60'}`}>RapidAPI 抓取</button>
-              </div>
-              {scrapeSource === 'rapid-api' && (
-                <div className="mt-3">
-                  <label className="mb-2 block text-sm font-bold text-[#ff6b35]">RapidAPI Key</label>
-                  <input className="input-ui" type="password" value={rapidApiKey} onChange={(e) => setRapidApiKey(e.target.value)} placeholder="您的 RapidAPI Key" />
-                  <p className="mt-1.5 text-xs text-[#ff6b35]/50">從 <a href="https://rapidapi.com" target="_blank" rel="noreferrer" className="underline">RapidAPI.com</a> 訂閱 Facebook Post Comments Scraper API</p>
-                </div>
-              )}
             <div>
               <label className="mb-2 block text-sm font-bold text-warning">活動名稱 / 貼文標題</label>
               <input className="input-ui" value={postTitle} onChange={(e) => setPostTitle(e.target.value)} placeholder="例如：三月粉專互動抽獎活動" />

@@ -12,6 +12,9 @@ export default async function handler(req, res) {
   }
 
   const url = String(req.query.url || '').trim();
+  const scrapeSource = req.query.scrapeSource || 'graph-api';
+  const rapidApiKey = req.query.rapidApiKey || process.env.RAPID_API_KEY;
+
   if (!url) {
     return res.status(400).json({ error: 'Missing Facebook post URL' });
   }
@@ -20,16 +23,25 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Only facebook.com public post URLs are supported' });
   }
 
+  // ── RapidAPI mode ──────────────────────────────────────────────────────────
+  if (scrapeSource === 'rapid-api' && rapidApiKey) {
+    try {
+      const result = await fetchCommentsRapidApi(url, rapidApiKey);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({ ok: false, error: error.message || 'RapidAPI fetch failed' });
+    }
+  }
+
   // ── Graph API mode ──────────────────────────────────────────────────────────
-  const accessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const accessToken = req.query.fbAccessToken || process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
 
   if (accessToken) {
     try {
       const result = await fetchCommentsGraphApi(url, accessToken, req.query);
       return res.status(200).json(result);
     } catch (error) {
-      // Fallback to Jina on Graph API error
-      console.error('[Graph API] Error, falling back to Jina:', error.message);
+      console.error('[Graph API] Error:', error.message);
     }
   }
 
@@ -75,6 +87,50 @@ export default async function handler(req, res) {
       error: error.message || 'Failed to fetch comments'
     });
   }
+}
+
+// ── RapidAPI Facebook Scraper ────────────────────────────────────────────────
+async function fetchCommentsRapidApi(postUrl, apiKey) {
+  // Use RapidAPI Facebook Post Comments Scraper API
+  const rapidApiHost = 'facebook-post-comments-scraper.p.rapidapi.com';
+
+  const response = await fetch(
+    `https://${rapidApiHost}/api/facebook/post/comments?url=${encodeURIComponent(postUrl)}`,
+    {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': rapidApiHost,
+        'Accept': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`RapidAPI error ${response.status}: ${text.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const rawComments = data.comments || data.data || data.result || [];
+  const comments = [];
+
+  for (const item of rawComments) {
+    const name = (item.author || item.name || item.username || item.user || '').trim();
+    const comment = (item.text || item.message || item.comment || item.body || '').trim();
+    if (!name || !comment) continue;
+    comments.push({ name, comment, age: '' });
+  }
+
+  return {
+    ok: true,
+    source: 'rapid-api',
+    postTitle: data.title || data.postTitle || 'Facebook Post',
+    commentCountText: `${comments.length} 則留言`,
+    extractedCount: comments.length,
+    comments,
+    note: 'Fetched via RapidAPI Facebook Scraper. Get a key at rapidapi.com and subscribe to the Facebook Post Comments Scraper API.',
+  };
 }
 
 // ── Facebook Graph API ────────────────────────────────────────────────────────
