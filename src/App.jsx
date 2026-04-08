@@ -534,6 +534,7 @@ export default function App() {
                   <p className="mt-1.5 text-xs text-[#ff6b35]/50">從 <a href="https://rapidapi.com" target="_blank" rel="noreferrer" className="underline">RapidAPI.com</a> 訂閱 Facebook Post Comments Scraper API</p>
                 </div>
               )}
+            </div>
             <div>
               <label className="mb-2 block text-sm font-bold text-warning">活動名稱 / 貼文標題</label>
               <input className="input-ui" value={postTitle} onChange={(e) => setPostTitle(e.target.value)} placeholder="例如：三月粉專互動抽獎活動" />
