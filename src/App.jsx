@@ -90,6 +90,7 @@ const iconSvgs = {
 };
 
 export default function App() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [postUrl, setPostUrl] = useState('');
   const [postTitle, setPostTitle] = useState('');
   const [commentInput, setCommentInput] = useState('');

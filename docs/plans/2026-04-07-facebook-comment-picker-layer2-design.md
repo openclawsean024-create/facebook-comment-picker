@@ -298,7 +298,7 @@ JINA_API_KEY=
 ## 6. Notion 整合
 
 完成開發並部署後，更新 Notion 任務頁面的 Git 欄位：
-- **資料庫 ID：** `31a449ca-65d8-8021-8cf2-d052e5416828`
+- **資料庫 ID：** `31a449ca-65d8-802e-ba9a-000b3f29c6b2`（新！舊ID 已失效）
 - **更新的欄位：** Git（URL，指向 GitHub commit/deployment）
 - **更新方式：** PATCH `/v1/pages/{page_id}`，設定 `{"Git": {"url": "https://github.com/..."}}`
 
