@@ -775,7 +775,7 @@ export default function App() {
           <h1 className="mt-4 max-w-4xl text-xl md:text-2xl lg:text-3xl font-light leading-tight text-warning">
             把 Facebook 抽獎頁，換成目標站的完整品牌節奏。
           </h1>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid gap-3 grid-cols-1 md:grid-cols-3">
             {[['📥 匯入留言', '支援 Graph API / 手動粘貼 / CSV 匯入'], ['🎯 設定條件', '關鍵字 / 黑名單 / 去重 / 獎品配置'], ['🎉 開獎揭曉', '中獎公布畫面 / CSV 匯出 / 紀錄保存']].map(([k, v]) => (
               <div key={k} className="clone-card reveal-right text-sm">
                 <div className="font-black text-warning/60">{k}</div>
