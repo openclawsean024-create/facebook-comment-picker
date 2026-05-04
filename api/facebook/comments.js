@@ -113,11 +113,16 @@ async function fetchAllComments(postId, accessToken, limit = 100) {
       });
     }
 
-    if (data.paging?.cursors?.after) {
-      after = data.paging.cursors.after;
-    } else {
-      break;
-    }
+    // Handle pagination: prefer cursors.after, fall back to parsing from next URL
+    if (!data.paging?.next) break;
+    const cursor =
+      data.paging?.cursors?.after ||
+      (() => {
+        try { return new URL(data.paging.next).searchParams.get('after'); }
+        catch { return null; }
+      })();
+    if (!cursor) break;
+    after = cursor;
   }
 
   // Fetch post info

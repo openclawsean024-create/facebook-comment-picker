@@ -114,7 +114,7 @@ function Stepper({ currentStep }) {
 
 // ── Tab 1: Import ───────────────────────────────────────────────────────────
 function TabImport({ postUrl, setPostUrl, postTitle, setPostTitle, commentInput, setCommentInput,
-  fetchMeta, loadingFetch, onFetch, onLoadSample, onCsvImport }) {
+  fetchMeta, loadingFetch, onFetch, onLoadSample, onCsvImport, onNext }) {
   return (
     <div className="space-y-5">
       {/* Post URL */}
@@ -169,6 +169,12 @@ function TabImport({ postUrl, setPostUrl, postTitle, setPostTitle, commentInput,
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
         <p className="text-sm text-warning/80">{fetchMeta}</p>
       </div>
+
+      {commentInput.trim() && (
+        <button className="btn-primary w-full" onClick={onNext}>
+          下一步：設定條件 →
+        </button>
+      )}
     </div>
   );
 }
@@ -529,14 +535,14 @@ export default function App() {
   const fetchComments = async () => {
     if (!postUrl.trim()) { setFetchMeta('⚠️ 請先貼上 Facebook 公開貼文網址。'); return; }
     setLoadingFetch(true);
-    setFetchMeta('⏳ 正在抓取留言資料，請稍候...');
+    setFetchMeta('⏳ 正在抓取全部留言，依留言數量可能需要 10~30 秒，請稍候...');
     try {
       const resp = await fetch(`/api/fetch-comments?url=${encodeURIComponent(postUrl.trim())}&fbAccessToken=${encodeURIComponent(fbAccessToken || '')}`);
       const data = await resp.json();
       if (!resp.ok || !data.ok) throw new Error(data.error || '抓取失敗');
       setCommentInput(data.comments.map(i => `${i.name} | ${i.comment}`).join('\n'));
       setPostTitle(prev => prev || data.postTitle || 'Facebook 公開貼文');
-      setFetchMeta(`✅ 已抓到 ${data.extractedCount} 筆留言（${data.source || 'unknown'}）。${data.note || ''}`);
+      setFetchMeta(`✅ 已抓到 ${data.extractedCount} 筆留言（共 ${data.pagesFetched ?? 1} 頁，${data.source || 'unknown'}）。${data.note || ''}`);
     } catch (err) {
       setFetchMeta(`❌ 抓取失敗：${err.message}。你可以直接在手動欄位粘貼留言名單。`);
     } finally {
@@ -804,6 +810,7 @@ export default function App() {
               onFetch={fetchComments}
               onLoadSample={loadSample}
               onCsvImport={handleCsvImport}
+              onNext={() => goToStep(2)}
             />
           )}
           {currentStep === 2 && (

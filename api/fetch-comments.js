@@ -23,10 +23,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Only facebook.com public post URLs are supported' });
   }
 
+  // Resolve share/p/ short links to real post URLs before processing
+  const resolvedUrl = await resolveShareUrl(url);
+
   // ── RapidAPI mode ──────────────────────────────────────────────────────────
   if (scrapeSource === 'rapid-api' && rapidApiKey) {
     try {
-      const result = await fetchCommentsRapidApi(url, rapidApiKey);
+      const result = await fetchCommentsRapidApi(resolvedUrl, rapidApiKey);
       return res.status(200).json(result);
     } catch (error) {
       return res.status(500).json({ ok: false, error: error.message || 'RapidAPI fetch failed' });
@@ -38,7 +41,7 @@ export default async function handler(req, res) {
 
   if (accessToken) {
     try {
-      const result = await fetchCommentsGraphApi(url, accessToken, req.query);
+      const result = await fetchCommentsGraphApi(resolvedUrl, accessToken, req.query);
       return res.status(200).json(result);
     } catch (error) {
       console.error('[Graph API] Error:', error.message);
@@ -47,7 +50,7 @@ export default async function handler(req, res) {
 
   // ── Jina fallback mode ──────────────────────────────────────────────────────
   try {
-    const target = `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, '')}`;
+    const target = `https://r.jina.ai/http://${resolvedUrl.replace(/^https?:\/\//i, '')}`;
     const response = await fetch(target, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -74,7 +77,7 @@ export default async function handler(req, res) {
       ok: true,
       source: 'r.jina.ai',
       requestedUrl: url,
-      resolvedUrl: parsed.resolvedUrl,
+      resolvedUrl: parsed.resolvedUrl || resolvedUrl,
       postTitle: parsed.postTitle,
       commentCountText: parsed.commentCountText,
       extractedCount: parsed.comments.length,
@@ -176,6 +179,24 @@ function extractPostId(url) {
 }
 
 /**
+ * Resolve Facebook /share/p/ short links to real post URLs by following the redirect.
+ */
+async function resolveShareUrl(url) {
+  if (!/facebook\.com\/share\//i.test(url)) return url;
+  try {
+    const resp = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+    });
+    const resolved = resp.url;
+    return resolved && resolved !== url ? resolved : url;
+  } catch {
+    return url;
+  }
+}
+
+/**
  * Fetch all comments from a Facebook post via Graph API with pagination.
  * @param {string} postUrl - The Facebook post URL
  * @param {string} accessToken - Page access token
@@ -218,6 +239,7 @@ async function fetchCommentsGraphApi(postUrl, accessToken, query = {}) {
       access_token: token,
       limit: limit.toString(),
       filter: 'stream',
+      summary: '1',
       fields: [
         'id',
         'message',
@@ -228,11 +250,9 @@ async function fetchCommentsGraphApi(postUrl, accessToken, query = {}) {
         'parent{id}',
         'attachment'
       ].join(','),
-      after: after || ''
     });
 
-    // Remove empty after param on first request
-    if (!after) params.delete('after');
+    if (after) params.set('after', after);
 
     const apiUrl = `${baseUrl}?${params.toString()}`;
     const response = await fetch(apiUrl, {
@@ -279,23 +299,16 @@ async function fetchCommentsGraphApi(postUrl, accessToken, query = {}) {
       allComments.push(comment);
     }
 
-    // Handle pagination
-    if (data.paging && data.paging.cursors && data.paging.cursors.after) {
-      after = data.paging.cursors.after;
-    } else if (data.paging && data.paging.next) {
-      // Use next URL directly (simpler for some API responses)
-      const nextResponse = await fetch(data.paging.next, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (nextResponse.ok) {
-        const nextData = await nextResponse.json();
-        if (!nextData.data || nextData.data.length === 0) break;
-        // Continue loop with same after cursor (cursors are in next URL)
-        continue;
-      }
-    } else {
-      break; // No more pages
-    }
+    // Handle pagination: prefer cursors.after, fall back to parsing from next URL
+    if (!data.paging?.next) break;
+    const cursor =
+      data.paging?.cursors?.after ||
+      (() => {
+        try { return new URL(data.paging.next).searchParams.get('after'); }
+        catch { return null; }
+      })();
+    if (!cursor) break;
+    after = cursor;
   }
 
   // Also fetch replies for each top-level comment (if not already included via filter=stream)
