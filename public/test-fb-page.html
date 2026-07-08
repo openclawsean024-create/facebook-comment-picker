@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>FB 留言 DOM 模擬測試頁（v2.0 真實結構）</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
+h1 { color: #204272; }
+.info { background: #fff; border-left: 4px solid #ff6666; padding: 12px; margin: 10px 0; border-radius: 8px; }
+.scenario { background: #fff; border-radius: 12px; padding: 16px; margin: 20px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+.scenario h2 { color: #ff6666; margin-top: 0; }
+.mock-fb-post { background: #fff; border-radius: 8px; padding: 16px; margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.mock-author-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e4e6eb; }
+.mock-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#ff6666,#64E9F5); display:inline-block; }
+.mock-author-name { font-weight: 700; color: #050505; }
+.comment { padding: 8px 0; border-bottom: 1px dashed #e4e6eb; }
+.comment:last-child { border-bottom: 0; }
+.reactions { padding: 6px; background: #f0f2f5; border-radius: 6px; margin: 4px 0; font-size: 13px; }
+button { background: #ff6666; color: white; border: none; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: 700; margin: 4px; }
+button.secondary { background: #65676b; }
+pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<h1>FB 留言 DOM 模擬測試（v2.0 真實結構）</h1>
+
+<div class="info">
+<strong>📋 測試目的：</strong> 模擬三種真實 FB 留言區結構（舊版 / 新版 / 邊界案例），驗證 v2.0 bookmarklet 是否能正確抓取
+<ol>
+<li>舊版 UFI 結構（<code>.UFIComment</code> + <code>[data-testid="UFI2Comment/root"]</code>）</li>
+<li>新版 React 結構（<code>div[role="article"][aria-label="留言 by X"]</code>）</li>
+<li>留言嵌套回覆 + 按讚者 reactions 區混淆測試</li>
+</ol>
+</div>
+
+<div class="info" id="results" style="background:#e7f3ff;border-color:#1877f2;">
+未執行
+</div>
+
+<div style="margin: 16px 0;">
+<button id="btn-run" onclick="runTest()">▶ 執行測試</button>
+<button class="secondary" onclick="location.reload()">🔄 重新整理</button>
+</div>
+
+<!-- 情境 1：舊版 UFI 結構 -->
+<div class="scenario">
+<h2>情境 1：舊版 UFI 結構</h2>
+<div class="mock-fb-post">
+<div class="mock-author-bar">
+<span class="mock-avatar"></span>
+<a class="mock-author-name" href="https://www.facebook.com/pages-100/posts/1">陳大文</a>
+</div>
+<div>這是貼文內容</div>
+<div class="UFI2CommentsContainer">
+<h3 class="UFICommentsTitle">留言</h3>
+<div class="UFIList" id="ufi-list-1">
+<div data-testid="UFI2Comment/root" class="UFIComment">
+<a class="UFICommentActorName" href="https://www.facebook.com/user/a001">王小明</a>
+<span class="UFICommentBody"><span dir="auto">恭喜發財！我要抽 iPhone</span></span>
+</div>
+<div data-testid="UFI2Comment/root" class="UFIComment">
+<a class="UFICommentActorName" href="https://www.facebook.com/user/a002">李小芳</a>
+<span class="UFICommentBody"><span dir="auto">這個活動好讚👍</span></span>
+</div>
+</div>
+<a class="UFIPagerLink" href="#" role="button">查看更多留言</a>
+</div>
+</div>
+</div>
+
+<!-- 情境 2：新版 React 結構（最常見） -->
+<div class="scenario">
+<h2>情境 2：新版 React 結構（真實 FB 桌面版）</h2>
+<div class="mock-fb-post">
+<div role="article" aria-label="由測試小編建立">
+<div data-testid="post_message">
+<h2 dir="auto">歡迎參加留言抽獎活動 🎁（情境 2）</h2>
+</div>
+</div>
+
+<div role="complementary" aria-label="留言" data-pagelet="Comments">
+<div role="article" aria-label="留言 by 張三" data-testid="comment">
+<div><a href="https://www.facebook.com/user/b001" role="link">張三</a></div>
+<div><span dir="auto">我要參加！把大獎帶回家～</span></div>
+<div><span aria-label="5 分鐘" role="tooltip">5 分鐘</span><span dir="auto">讚</span></div>
+</div>
+
+<div role="article" aria-label="留言 by 王小明" data-testid="comment">
+<div><a href="https://www.facebook.com/user/b002" role="link">王小明</a></div>
+<div><span dir="auto">謝謝主辦！我要抽獎～</span></div>
+<div><span aria-label="10 分鐘" role="tooltip">10 分鐘</span><span dir="auto">回覆</span></div>
+</div>
+
+<div role="article" aria-label="留言 by 李小芳" data-testid="comment">
+<div><a href="https://www.facebook.com/user/b003" role="link">李小芳</a></div>
+<div><span dir="auto">第一個留言！衝衝衝</span></div>
+</div>
+
+<!-- 這是 reactions 區，會誤抓的誘餌 -->
+<div role="article" aria-label="誰按了讚">
+<h3 dir="auto">按讚的用戶</h3>
+<a href="https://www.facebook.com/user/x001" role="link">路人甲</a>
+<a href="https://www.facebook.com/user/x002" role="link">路人乙</a>
+<a href="https://www.facebook.com/user/x003" role="link">路人丙</a>
+<span dir="auto">👍</span>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- 情境 3：嵌套回覆 + 中英文混雜 -->
+<div class="scenario">
+<h2>情境 3：嵌套回覆 + 中英文混雜</h2>
+<div class="mock-fb-post">
+<div role="complementary" aria-label="Comments">
+
+<div role="article" aria-label="Comment by Allen Hsieh">
+<a href="https://www.facebook.com/profile.php?id=10001" role="link">Allen Hsieh</a>
+<div><span dir="auto">Lucky draw? Sign me up!</span></div>
+</div>
+
+<div role="article" aria-label="Comment by Katie Lee">
+<a href="https://www.facebook.com/profile.php?id=10002" role="link">Katie Lee</a>
+<div><span dir="auto">我要抽 iPhone 拜託拜託🙏</span></div>
+</div>
+
+<div role="article" aria-label="Comment by Sheng Hsuan Kuo">
+<a href="https://www.facebook.com/profile.php?id=10003" role="link">Sheng Hsuan Kuo</a>
+<div><span dir="auto">已完成留言，分享給朋友了！</span></div>
+</div>
+
+<!-- Reactions 區誘餌 -->
+<div role="article" aria-label="reactions">
+<a href="https://www.facebook.com/profile.php?id=90001">路人甲</a>
+<a href="https://www.facebook.com/profile.php?id=90002">路人乙</a>
+<a href="https://www.facebook.com/profile.php?id=90003">路人丙</a>
+</div>
+
+<!-- 留言嵌套回覆 -->
+<div role="article" aria-label="留言 by 七號">
+<a href="https://www.facebook.com/user/c001" role="link">七號</a>
+<span dir="auto">這個活動太棒了！</span>
+<div style="margin-left:40px;">
+<div role="article" aria-label="留言 by 八號">
+<a href="https://www.facebook.com/user/c002" role="link">八號</a>
+<span dir="auto">我覺得也是～期待中獎</span>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<hr/>
+<h3>預期結果</h3>
+<pre id="expected">
+情境 1 應抓到：2 則
+  - 王小明：「恭喜發財！我要抽 iPhone」
+  - 李小芳：「這個活動好讚👍」
+
+情境 2 應抓到：3 則 (注意：reactions 區不該抓)
+  - 張三：「我要參加！把大獎帶回家～」
+  - 王小明：「謝謝主辦！我要抽獎～」
+  - 李小芳：「第一個留言！衝衝衝」
+  - 不應抓到：路人甲/乙/丙（reactions）
+
+情境 3 應抓到：5 則 (包含嵌套回覆)
+  - Allen Hsieh：「Lucky draw? Sign me up!」
+  - Katie Lee：「我要抽 iPhone 拜託拜託🙏」
+  - Sheng Hsuan Kuo：「已完成留言，分享給朋友了！」
+  - 不應抓到：路人甲/乙/丙（reactions 區）
+  - 七號：「這個活動太棒了！」
+  - 八號：「我覺得也是～期待中獎」(嵌套回覆)
+
+總計預期：2 + 3 + 5 = 10 則
+不應抓到任何「按讚者」或「reactions」
+</pre>
+
+<hr/>
+<h3>實際跑 bookmarklet 結果</h3>
+<pre id="actual">尚未執行</pre>
+
+<hr/>
+<h3>驗證主控台輸出</h3>
+<pre id="verify">尚未執行</pre>
+
+<script>
+// ============================================================================
+// 測試控制
+// ============================================================================
+window.runTest = async function() {
+var btn = document.getElementById('btn-run');
+btn.disabled = true;
+btn.textContent = '⏳ 執行中...';
+document.getElementById('actual').textContent = '執行中...';
+document.getElementById('verify').textContent = '執行中...';
+
+// 動態載入並執行 bookmarklet v2.0
+// 因為是 javascript: URL，需要建 <a> 點擊或動態 eval
+var script = await fetch('/bookmarklet-injected.js').then(r=>r.text()).catch(async ()=>{
+  // 沒對外公開版本時直接抓 /bookmarklet.js 內容
+  return await fetch('/bookmarklet.js').then(r=>r.text());
+});
+
+// bookmarklet.js 是 javascript:(function(){...})(); 格式
+// 去掉前綴
+var code = script.replace(/^javascript:/, '').trim();
+
+try {
+  // 直接執行（會 push 到 window.__fbpbAllComments）
+  (0, eval)(code);
+  // 等 3 秒（v2.0 自動滾動 + 觀察）
+  await new Promise(r => setTimeout(r, 3000));
+
+  // 同步取資料
+  var data = (window.__fbpbAllComments || []).slice();
+  document.getElementById('actual').textContent = JSON.stringify(data, null, 2);
+
+  // 驗證
+  var expected = [
+    {name:'王小明', msg:'恭喜發財！我要抽 iPhone'},
+    {name:'李小芳', msg:'這個活動好讚👍'},
+    {name:'張三', msg:'我要參加！把大獎帶回家～'},
+    {name:'王小明', msg:'謝謝主辦！我要抽獎～'},
+    {name:'李小芳', msg:'第一個留言！衝衝衝'},
+    {name:'Allen Hsieh', msg:'Lucky draw? Sign me up!'},
+    {name:'Katie Lee', msg:'我要抽 iPhone 拜託拜託🙏'},
+    {name:'Sheng Hsuan Kuo', msg:'已完成留言，分享給朋友了！'},
+    {name:'七號', msg:'這個活動太棒了！'},
+    {name:'八號', msg:'我覺得也是～期待中獎'}
+  ];
+
+  var results = {pass:0, fail:0, falsePositive:0, details:[]};
+
+  // 每一則預期應該被找到
+  expected.forEach(function(exp){
+    var matched = data.find(function(d){
+      return d.from.name === exp.name && d.message === exp.msg;
+    });
+    if(matched){
+      results.pass++;
+      results.details.push('✅ ' + exp.name + ' / ' + exp.msg);
+    }else{
+      results.fail++;
+      results.details.push('❌ 漏抓：' + exp.name + ' / ' + exp.msg);
+    }
+  });
+
+  // 不應該抓到 reactions 區
+  var reactorNames = ['路人甲', '路人乙', '路人丙'];
+  var falsePositives = data.filter(function(d){
+    return reactorNames.indexOf(d.from.name) >= 0;
+  });
+  results.falsePositive = falsePositives.length;
+  falsePositives.forEach(function(fp){
+    results.details.push('⚠️ 誤抓：' + fp.from.name + ' / ' + fp.message);
+  });
+
+  // 設定結果顏色
+  var resultsEl = document.getElementById('results');
+  var total = expected.length;
+  var fpRate = (results.falsePositive / Math.max(1, data.length) * 100).toFixed(1);
+  if(results.fail === 0 && results.falsePositive === 0 && data.length === expected.length){
+    resultsEl.style.background = '#d4edda';
+    resultsEl.style.borderColor = '#51CF66';
+    resultsEl.innerHTML = '<strong>✅ 100% 通過！</strong><br>預期 '+total+' 則抓到 '+total+' 則<br>誤抓按讚者：0 則<br>實際抓到 '+data.length+' 則';
+  }else{
+    resultsEl.style.background = '#fff3cd';
+    resultsEl.style.borderColor = '#ffc107';
+    resultsEl.innerHTML = '<strong>⚠️ 部分通過（需修正）</strong><br>正取 '+results.pass+'/'+total+' | 漏抓 '+results.fail+' | 誤抓 '+results.falsePositive+'<br>實際抓到 '+data.length+' 則';
+  }
+
+  document.getElementById('verify').textContent = results.details.join('\n');
+}catch(e){
+  document.getElementById('actual').textContent = '執行錯誤：'+e.message;
+  document.getElementById('results').innerHTML = '❌ 執行錯誤：'+e.message;
+}
+
+btn.disabled = false;
+btn.textContent = '▶ 重新執行';
+};
+</script>
+
+</body>
+</html>

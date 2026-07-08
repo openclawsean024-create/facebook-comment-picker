@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "FB 留言抽獎助手",
+  "version": "1.4.0",
+  "description": "一鍵自動捲動並抓取 FB 貼文所有留言，自動複製 JSON 到剪貼簿",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://facebook.com/*",
+    "https://m.facebook.com/*"
+  ],
+  "action": {
+    "default_title": "抓留言（自動捲動到底）",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://facebook.com/*",
+        "https://m.facebook.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}

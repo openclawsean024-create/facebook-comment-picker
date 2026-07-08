@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facebook - Real Public Post Test (login required)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <!-- 這個頁面模擬「登入後的 FB 公開貼文」結構 -->
+  <!-- 用於測試 v1.3 bookmarklet / 擴充套件 / 手動匯入 等所有方案 -->
+
+  <div id="login-warning" style="background: #fee; padding: 12px; text-align: center;">
+    You must log in to Facebook to see this content.
+  </div>
+
+  <!-- FB 真實貼文結構（公開版，無需登入即可見部分留言） -->
+  <div data-pagelet="FeedUnit_0" role="article" aria-label="Story">
+    <div class="story_body_container">
+      <h2 class="story_header">公開貼文 - 測試留言抓取</h2>
+      <div class="userContent">這是模擬的公開 FB 貼文，包含 12 則公開留言</div>
+    </div>
+
+    <!-- 公開留言區（新版 FB React SPA 真實結構） -->
+    <div role="complementary" aria-label="Comments" data-pagelet="Comments">
+      <h3>公開留言</h3>
+
+      <!-- 公開留言 1 -->
+      <div role="article" aria-label="Comment by 陳小美" class="UFIComment">
+        <a href="https://www.facebook.com/chensomebodymeimei" class="UFICommentActorName">陳小美</a>
+        <div class="UFICommentBody">
+          <span dir="auto" data-testid="UFI2CommentBody">我要抽 iPhone 拜託</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">5 小時</a>
+        </div>
+      </div>
+
+      <!-- 公開留言 2 -->
+      <div role="article" aria-label="Comment by 林大成" class="UFIComment">
+        <a href="https://www.facebook.com/profile.php?id=100002">林大成</a>
+        <div class="UFICommentBody">
+          <span dir="auto">@王五 一起 tag</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">4 小時</a>
+        </div>
+      </div>
+
+      <!-- 公開留言 3 -->
+      <div role="article" aria-label="Comment by 王小明" class="UFIComment">
+        <a href="https://www.facebook.com/wangxiaoming" class="UFICommentActorName">王小明</a>
+        <div class="UFICommentBody">
+          <span dir="auto">+1 感謝大大</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">3 小時</a>
+        </div>
+      </div>
+
+      <!-- 繼續... -->
+      <div role="article" aria-label="Comment by 李小芳" class="UFIComment">
+        <a href="https://www.facebook.com/lixiaofang" class="UFICommentActorName">李小芳</a>
+        <div class="UFICommentBody">
+          <span dir="auto">求抽獎 🎁</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">2 小時</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by 張三" class="UFIComment">
+        <a href="https://www.facebook.com/zhangsan" class="UFICommentActorName">張三</a>
+        <div class="UFICommentBody">
+          <span dir="auto">tag @李四 @王五 @趙六</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">1 小時</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by Katie Lee" class="UFIComment">
+        <a href="https://www.facebook.com/katielee" class="UFICommentActorName">Katie Lee</a>
+        <div class="UFICommentBody">
+          <span dir="auto">Looking forward to this giveaway!</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">45 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by 周七" class="UFIComment">
+        <a href="https://www.facebook.com/zhouqi" class="UFICommentActorName">周七</a>
+        <div class="UFICommentBody">
+          <span dir="auto">已留言 期待中獎</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">30 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by 陳八" class="UFIComment">
+        <a href="https://www.facebook.com/chenba" class="UFICommentActorName">陳八</a>
+        <div class="UFICommentBody">
+          <span dir="auto">test 1234</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">20 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by 劉九" class="UFIComment">
+        <a href="https://www.facebook.com/liujiu" class="UFICommentActorName">劉九</a>
+        <div class="UFICommentBody">
+          <span dir="auto">@王小明 收到了</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">15 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by 鄭十" class="UFIComment">
+        <a href="https://www.facebook.com/profile.php?id=100003">鄭十</a>
+        <div class="UFICommentBody">
+          <span dir="auto">完成</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">10 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by Allen Hsieh" class="UFIComment">
+        <a href="https://www.facebook.com/allenhsieh" class="UFICommentActorName">Allen Hsieh</a>
+        <div class="UFICommentBody">
+          <span dir="auto">我也想要參與</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">5 分鐘</a>
+        </div>
+      </div>
+
+      <div role="article" aria-label="Comment by Sheng Hsuan Kuo" class="UFIComment">
+        <a href="https://www.facebook.com/shenghsuan" class="UFICommentActorName">Sheng Hsuan Kuo</a>
+        <div class="UFICommentBody">
+          <span dir="auto">抽我抽我 🙏</span>
+        </div>
+        <div class="UFICommentActions">
+          <a href="#">讚</a> · <a href="#">回覆</a> · <a href="#">剛剛</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 隱藏的後續留言（要按「查看更多」才載入） -->
+    <div id="hidden-comments" style="display: none;">
+      <div role="article" aria-label="Comment by 隱藏1" class="UFIComment">
+        <a href="https://www.facebook.com/yc1">隱藏1</a>
+        <div class="UFICommentBody"><span dir="auto">這則是按更多後才出現</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #e7f3ff; padding: 16px; margin: 20px; border-radius: 8px;">
+    <h3>📋 12 則公開留言測試完成</h3>
+    <p>FB 真實結構模擬完成。請使用以下方式測試：</p>
+    <button id="btn-test" style="padding: 12px 24px; background: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 8px;">注入 Bookmarklet v1.3 測試</button>
+    <button id="btn-show" style="padding: 12px 24px; background: #42b72a; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 8px;">顯示結果</button>
+    <button id="btn-reset" style="padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 8px;">清除</button>
+  </div>
+
+  <div id="results" style="background: #1c1e21; color: #00ff00; padding: 16px; margin: 20px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; min-height: 100px;">點擊「注入 Bookmarklet v1.3 測試」開始...</div>
+
+  <script>
+    document.getElementById('btn-test').addEventListener('click', async () => {
+      try {
+        document.getElementById('results').textContent = '注入中...';
+        const r = await fetch('/bookmarklet-test.js');
+        const code = await r.text();
+        const jsCode = code.replace(/^javascript:[\s\n]*/, '');
+        eval(jsCode);
+        setTimeout(() => {
+          showResult();
+        }, 8000);
+      } catch (e) {
+        document.getElementById('results').textContent = '錯誤：' + e.message;
+      }
+    });
+
+    document.getElementById('btn-show').addEventListener('click', () => {
+      showResult();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      delete window.__fbpbData;
+      delete window.__fbpbSeen;
+      const old = document.getElementById('fb-pb13');
+      if (old) old.remove();
+      document.getElementById('results').textContent = '已清除';
+    });
+
+    function showResult() {
+      const data = window.__fbpbData;
+      if (!data) {
+        document.getElementById('results').textContent = '❌ window.__fbpbData 不存在\n\n可能原因：\n1. Bookmarklet 沒執行\n2. URL check 被擋（測試版應已繞過）\n3. 等待時間不夠（請再等 5 秒）';
+        return;
+      }
+      const expectedNames = ['陳小美', '林大成', '王小明', '李小芳', '張三', 'Katie Lee', '周七', '陳八', '劉九', '鄭十', 'Allen Hsieh', 'Sheng Hsuan Kuo'];
+      const actualNames = data.map(c => c.from.name);
+      const missing = expectedNames.filter(n => !actualNames.includes(n));
+      const extra = actualNames.filter(n => !expectedNames.includes(n));
+
+      document.getElementById('results').textContent =
+        `=== 抓到 ${data.length} 則 / 預期 12 則 ===\n\n` +
+        `✅ 完整抓到：${expectedNames.length - missing.length}/12\n` +
+        (missing.length ? `❌ 漏抓：${missing.join(', ')}\n` : '') +
+        (extra.length ? `⚠️ 誤抓：${extra.join(', ')}\n` : '') +
+        `\n實際名單：\n` +
+        JSON.stringify(data.map(c => ({ name: c.from.name, msg: c.message })), null, 2);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>FB 留言抽獎助手</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: #f6f8fc;
+      padding: 16px; margin: 0; width: 320px;
+      color: #204272;
+    }
+    h1 { font-size: 16px; margin: 0 0 4px 0; font-weight: 900; }
+    .subtitle { font-size: 11px; color: #888; margin-bottom: 16px; }
+    .btn {
+      display: block; width: 100%; padding: 14px; margin-bottom: 8px;
+      background: linear-gradient(135deg, #ff6666, #ff8b8b);
+      color: white; border: none; border-radius: 999px;
+      font-size: 13px; font-weight: 900; cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 8px 20px rgba(255,102,102,0.3);
+    }
+    .btn.secondary {
+      background: rgba(100,233,245,0.2); color: #204272;
+      border: 1px solid rgba(100,233,245,0.4);
+      box-shadow: none;
+    }
+    .tip {
+      margin-top: 12px; padding: 10px;
+      background: rgba(100,233,245,0.1);
+      border-radius: 12px;
+      font-size: 11px; color: #204272;
+    }
+    .count { font-size: 20px; font-weight: 900; color: #ff6666; }
+  </style>
+</head>
+<body>
+  <h1>FB 留言抽獎助手 v1.2</h1>
+  <div class="subtitle">自動捲動 + 一鍵複製到剪貼簿</div>
+
+  <button class="btn" id="btn-full">完整抓取（自動捲動到底）</button>
+  <button class="btn secondary" id="btn-quick">快速抓取（目前可見）</button>
+
+  <div class="tip">
+    完成後右下角會出現浮動面板，點「複製留言 JSON」就會自動複製到剪貼簿，然後回到 <strong>https://src-tau-ruddy-65.vercel.app/</strong> 貼上即可。
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

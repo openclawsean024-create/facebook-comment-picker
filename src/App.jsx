@@ -739,6 +739,45 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ── Bookmarklet & Chrome Extension Panel ─────────────────────────── */}
+      <section className="container mt-12">
+        <div className="overflow-hidden rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top,rgba(255,102,102,.12),transparent_28%),linear-gradient(180deg,#fff_0%,#fff8f7_100%)] shadow-[0_18px_50px_rgba(255,102,102,.18)]">
+          <div className="grid gap-8 px-6 py-8 md:grid-cols-[1.1fr,1fr] lg:px-10">
+            <div>
+              <div className="text-xs font-black uppercase tracking-[0.22em] text-primary">📌 FB 留言抓取工具</div>
+              <h3 className="mt-3 text-3xl font-black tracking-tight text-dark md:text-4xl">免登入 FB 帳號、零 API，<br/>一鍵抓全部留言</h3>
+              <p className="mt-4 text-base leading-7 text-dark/70">
+                提供兩種抓取方式：<strong className="text-primary">書籤小工具</strong>（直接在 FB 貼文頁執行）、
+                <strong className="text-primary">Chrome 擴充套件</strong>（更穩定的批次抓取）。兩者皆把留言 JSON 複製到剪貼簿，再貼回上方「留言名單」即可抽獎。
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a href="/bookmarklet.js" className="btn-primary inline-flex items-center gap-2" download title="把這個連結拖到書籤列即可使用">
+                  🔖 安裝書籤小工具
+                </a>
+                <a href="/fb-comment-picker-extension.zip" className="btn-secondary inline-flex items-center gap-2" download>
+                  🧩 下載 Chrome 擴充 (.zip)
+                </a>
+                <a href="/bookmarklet-test.js" className="btn-ghost inline-flex items-center gap-2 text-sm" target="_blank" rel="noreferrer">
+                  🧪 測試模式
+                </a>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-dark/8 bg-white/60 p-5">
+              <div className="text-xs font-black uppercase tracking-[0.2em] text-dark/60">使用步驟</div>
+              <ol className="mt-3 space-y-3 text-sm text-dark/80">
+                <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-white">1</span><span>把「🔖 安裝書籤小工具」拖到瀏覽器書籤列，或解壓縮 Chrome 擴充 .zip 到開發者模式載入。</span></li>
+                <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-white">2</span><span>打開 Facebook 貼文頁（需登入 FB），點書籤或擴充圖示啟動。</span></li>
+                <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-white">3</span><span>自動捲動留言、點「查看更多」，完成後按「📋 複製留言 JSON」。</span></li>
+                <li className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-white">4</span><span>回到本站，貼到「留言名單」欄位 → 套用篩選 → 抽獎！</span></li>
+              </ol>
+              <div className="mt-5 rounded-xl border border-warning/20 bg-warning/8 px-4 py-3 text-xs leading-6 text-warning">
+                <strong>隱私聲明：</strong>書籤/擴充完全在瀏覽器本地執行，不經過任何第三方伺服器、不存取你的 FB 密碼、不會發送留言資料到外部。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
