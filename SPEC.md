@@ -1,196 +1,119 @@
-# Facebook 留言抽獎工具 — 產品規格書 v4 (Final)
+# LINE/FB/threads CLI Wrapper 工廠 — 規格計劃書 v1.0
 
-> **版本**：v4.0  
-> **更新日期**：2026-04-04  
-> **狀態**：✅ READY FOR IMPLEMENTATION  
-> **Sean 原始反饋**：「匯入留言與設定抽獎條件和 Draw Result 上移到網頁的第二層樓；如何能夠第三方抓取完整的公開貼文還沒實作，請提供解決方案並實作」  
-> **前版狀態**：v3（facebook-comment-picker-v3.md）
+> 版本：v1.0｜更新日期：2026-07-11｜維護者：Sophia (CPO)
+> 對接技術：Alan (CTO)
 
 ---
 
-## 一、願景與產品定位
+## 1. 問題陳述
 
-**一句話價值主張**：公平透明、一鍵產出 Facebook 公開貼文留言抽獎名單。
+### 1.1 目標使用者
 
-**目標受眾**：台灣粉絲團管理員、網紅、自媒體行銷人員
+| 族群 | 規模 | 痛點 |
+|---|---|---|
+| 中小企業客服/小編 | ~15 萬 | 每天要回 FB/LINE/Threads 留言，手動切換 3 個 App 浪費時間 |
+| KOL / 自媒體經營者 | ~5 萬 | 跨平台訊息管理困難、易漏回 |
+| 行銷公司 | ~3,000 | 客戶帳號多平台管理、人力成本高 |
+| 工程師 | ~10 萬 | 想自動化社群互動但各平台 API 規格不同 |
 
----
+### 1.2 為什麼不做替代方案
 
-## 二、Sean's Feedback — Layer 2 導航 + 第三方抓取 🔧
-
-### 2.1 Feedback 1：Layer 2 導航（Tab/Stepper 設計）
-
-> 「匯入留言與設定抽獎條件和 Draw Result 上移到網頁的第二層樓」
-
-**設計原則**：三大核心步驟（匯入 / 設定條件 / 開獎）無需滾動即可操作，全部在第二層樓完成。
-
-**Layer 2 頁面架構**：
-```
-┌─────────────────────────────────────┐
-│ Logo                          登入   │ ← 第一層樓（Header）
-├─────────────────────────────────────┤
-│ 🔗 post_url_here...                 │ ← 貼文 URL 顯示列
-├─────────────────────────────────────┤
-│                                     │
-│  [📥 匯入留言] → [🎯 設定條件] → [🎉 開獎結果] │ ← LAYER 2 TABS
-│                                     │
-│  ┌─────────────────────────────┐   │
-│  │                             │   │
-│  │   Tab 內容區（依步驟切換）   │   │
-│  │                             │   │
-│  │   - 匯入留言：URL輸入+抓取   │   │
-│  │   - 設定條件：條件表單       │   │
-│  │   - 開獎結果：中獎名單卡片   │   │
-│  │                             │   │
-│  └─────────────────────────────┘   │
-│                                     │
-│  [上一步]              [下一步/開獎]│
-│                                     │
-└─────────────────────────────────────┘
-```
-
-**Stepper 進度條**：
-```
-[1. 匯入留言] ──→ [2. 設定條件] ──→ [3. 開獎結果]
-     ●                  ○                  ○
-   完成               當前               等待
-```
-
-### 2.2 Feedback 2：Facebook Graph API 第三方抓取
-
-> 「如何能夠第三方抓取完整的公開貼文還沒實作，請提供解決方案並實作」
-
-**推薦方案：Facebook Graph API（OAuth 2.0 授權）**
-
-**流程**：
-```
-用戶粘貼 Facebook 貼文 URL
-    ↓
-系統解析出 post ID
-    ↓
-用戶點擊「授權抓取」（觸發 Facebook OAuth）
-    ↓
-取得 user access token（個人用戶即可，無需企業認證）
-    ↓
-呼叫 Graph API 抓取該貼文下所有留言（含分頁）
-    ↓
-解析留言資料（姓名、留言內容、時間）
-    ↓
-匯入抽獎候選名單
-```
-
-**Graph API 實作**：
-
-```javascript
-// Step 1: 解析 post URL 取得 post ID
-function extractPostId(url) {
-  // https://www.facebook.com/username/posts/123456789
-  // https://www.facebook.com/photo?fbid=123456789
-  // https://www.facebook.com/permalink.php?story_fbid=xxx&id=xxx
-  const match = url.match(/posts\/(\d+)|fbid=(\d+)|story_fbid=(\d+)/);
-  return match ? (match[1] || match[2] || match[3]) : null;
-}
-
-// Step 2: 抓取留言（支援分頁）
-async function fetchComments(postId, accessToken) {
-  const comments = [];
-  let url = `https://graph.facebook.com/v18.0/${postId}/comments?fields=id,message,from{name,id},created_time,parent&access_token=${accessToken}&limit=100`;
-  
-  while (url) {
-    const res = await fetch(url);
-    const data = await res.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message);
-    }
-    
-    comments.push(...data.data);
-    url = data.paging?.next || null;  // 自動抓取下一頁
-  }
-  
-  return comments;
-}
-
-// Step 3: 匯入抽獎候選名單
-function importToRaffle(comments) {
-  return comments
-    .filter(c => !c.parent)  // 排除回覆（只取主留言）
-    .map(c => ({
-      id: c.id,
-      name: c.from?.name || 'Unknown',
-      userId: c.from?.id,
-      message: c.message,
-      time: c.created_time,
-    }));
-}
-```
-
-**Alan 的實作清單**：
-
-| 功能 | API Route | 說明 |
-|------|-----------|------|
-| OAuth 授權頁 | `/api/facebook/auth` | 跳轉 Facebook 授權 |
-| OAuth 回調 | `/api/facebook/callback` | 接收 code，換 token |
-| 解析貼文 | `/api/facebook/parse-post` | 從 URL 解析 post ID |
-| 抓取留言 | `/api/facebook/comments` | Graph API，含分頁處理 |
-| 備用爬蟲 | `/api/facebook/import-url` | ScraperAPI 備用方案 |
-| 手動 CSV 匯入 | `/api/import/csv` | 最終備案 |
-
-**備用方案：ScraperAPI 爬蟲**（當 Graph API 無法使用時）：
-```javascript
-async function scrapeViaScraper(postUrl) {
-  const res = await fetch('http://api.scraperapi.com?api_key=YOUR_KEY&url=' + encodeURIComponent(postUrl));
-  const html = await res.text();
-  // DOM 解析抽出留言...
-}
-```
-
-### 2.3 抽獎條件設定（Tab 2）
-
-| 功能 | 說明 |
-|------|------|
-| 抽獎人數 | 數量輸入（1-N） |
-| 排除重複留言者 | 同一用戶多條留言只計一次 |
-| 排除非粉絲 | （需 Facebook Page 粉絲資格審核）|
-| 關鍵字過濾 | 排除含特定關鍵字之留言 |
-| 標記要求 | 需 @標記 N 人以上 |
-| 留言次數門檻 | 限定留言 N 次以上 |
-
-### 2.4 開獎結果展示（Tab 3）
-
-| 功能 | 說明 |
-|------|------|
-| 中獎名單 | 卡片式（頭像 + 名稱 + 留言時間） |
-| 分享 | 一鍵分享至 FB/LINE |
-| 匯出 | CSV / Excel 匯出 |
-| 重新抽獎 | 保留條件重新抽 |
+- **商用社群管理工具（Hootsuite/Sprout Social）**：月費 100-500 USD，對台灣微型企業太貴
+- **各平台 App 手動切換**：每天耗 1-2 小時、易漏回
+- **自己寫 API 串接**：需工程師 + 各平台 API 規格不同 + OAuth 流程複雜
+- **我們的解法**：把 LINE/FB/Threads API 包成統一 CLI，3 個平台用同一指令操作，訂閱制 $99-299 USD/月
 
 ---
 
-## 三、Alan 實作優先順序
+## 2. 解決方案
 
-| 優先 | 功能 | 工時 |
-|------|------|------|
-| P0 | Layer 2 Tab/Stepper UI 實作 | 6h |
-| P0 | Facebook Graph API OAuth + 留言抓取 | 8h |
-| P1 | 條件過濾邏輯實作 | 6h |
-| P1 | 開獎結果 UI | 4h |
-| P2 | CSV 手動匯入（備用）| 4h |
-| P2 | ScraperAPI 備用爬蟲 | 8h |
+### 2.1 核心價值主張
 
----
+> 「一個 CLI 管 3 個社群平台 — 自動回覆、排程發文、私訊整合。」
 
-## 四、驗收標準
+### 2.2 使用者流程
 
-- [ ] Layer 2 三大 Tab（匯入/設定/結果）全部可在首屏完成
-- [ ] Facebook 授權流程正常運作
-- [ ] 成功抓取測試貼文的公開留言
-- [ ] 抽獎條件設定正確套用
-- [ ] 中獎名單正確隨機抽出
+1. 註冊帳號 + 連結 LINE/FB/Threads API key
+2. 安裝 CLI：`npm install -g @sophia/social-cli`
+3. 設定自動回覆規則（關鍵字 → 自動回覆）
+4. 排程發文（每日/每週/每月）
+5. Dashboard 查看跨平台訊息彙整
 
 ---
 
-*規格書版本：v4*
-*更新時間：2026-04-04*
-*更新內容：Layer 2 導航改版 + Facebook Graph API 第三方抓取實作方案*
-*負責人：Sophia（CEO/產品負責人）*
+## 3. 功能清單
+
+### 3.1 MVP（必做）
+
+- [ ] CLI 安裝包（npm global package）
+- [ ] LINE/FB/Threads 三平台 OAuth 串接
+- [ ] 自動回覆規則引擎（關鍵字 + 模板）
+- [ ] 排程發文（5 平台時間格式）
+- [ ] 私訊統一收件匣
+- [ ] 訊息歷史查詢
+- [ ] Web Dashboard（規則設定 + 數據）
+
+### 3.2 v2（加值）
+
+- [ ] AI 自動回覆（GPT-4o mini）
+- [ ] 多帳號管理（公司旗下多品牌）
+- [ ] 報表匯出（客服 KPI）
+- [ ] LINE / FB 廣告投放整合
+
+### 3.3 明確不做
+
+- 內容審核（Meta 政策嚴格，先不碰）
+- 跨平台訊息合併（同用戶在 FB/LINE 帳號對應）
+- 短影片自動發布（純文字 + 圖片）
+- 真人客服後台整合
+
+---
+
+## 4. 技術棧
+
+| 層 | 選擇 | 理由 |
+|---|---|---|
+| CLI | Node.js + Commander.js | 跨平台、輕量 |
+| Dashboard | Next.js 14 + TypeScript | 與既有架構一致 |
+| 資料庫 | PostgreSQL + Prisma | 用戶/規則/訊息 |
+| API 串接 | LINE Messaging API + Facebook Graph API + Threads API | 官方 SDK |
+| 排程 | BullMQ + Redis | 背景任務 |
+| 部署 | Vercel + Railway |
+
+---
+
+## 5. 完成標準（Definition of Done）
+
+- [ ] Vercel production URL（https://src-tau-ruddy-65.vercel.app 或新網址）200 OK
+- [ ] GitHub Repo 公開（https://github.com/openclawsean024-create/facebook-comment-picker）
+- [ ] CLI 可安裝 + 啟動
+- [ ] 3 平台 OAuth 串接測試通過
+- [ ] 自動回覆規則可運作（測 5 種情境）
+- [ ] 排程發文可執行
+- [ ] Dashboard 可登入 + 看見數據
+
+---
+
+## 6. 風險與決策
+
+| 風險 | 等級 | 緩解 |
+|---|---|---|
+| 各平台 API 變動頻繁 | 🔴 高 | 抽象化 API 層 + 自動監控 + 版本化 SDK |
+| Meta 政策變化（廣告/訊息限制） | 🟠 中 | 監控 + 明確聲明 + 不做內容審核 |
+| OAuth token 外洩風險 | 🟠 中 | token 加密儲存 + 定期 rotate |
+| 垃圾訊息濫用 | 🔴 高 | 用戶身份認證 + 使用量監控 + 違規停權 |
+
+---
+
+## 7. 變現路徑
+
+| 方案 | 價格 | 功能 |
+|---|---|---|
+| 免費版 | NT$0 | 1 平台 + 50 訊息/月 |
+| 個人版 | NT$299/月 | 3 平台 + 1000 訊息/月 + 自動回覆 |
+| 工作室版 | NT$1,499/月 | 個人版 + 多帳號 + AI 自動回覆 + 報表 |
+| 企業版 | NT$4,999/月 | 工作室版 + API + SSO + 客服優先 |
+
+---
+
+*本規格書版本：v1.0 — 2026-07-11*
