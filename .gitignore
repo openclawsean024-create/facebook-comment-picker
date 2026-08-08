@@ -7,3 +7,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Hermes agent state (verification.json kept at root)
+.hermes/
