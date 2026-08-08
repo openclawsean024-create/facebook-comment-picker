@@ -10,3 +10,4 @@ dist/
 
 # Hermes agent state (verification.json kept at root)
 .hermes/
+.env*

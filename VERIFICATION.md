@@ -87,3 +87,48 @@
 3. Vercel env 設定: 需 Sean 設 FACEBOOK_APP_ID / FACEBOOK_APP_SECRET / FACEBOOK_REDIRECT_URI
 4. FB Console Valid OAuth Redirect URI: 需 Sean 加 https://fb-giveaway-v2.vercel.app/api/facebook/callback
 5. Notion sync: AGENTS.md 與 sync-3way.sh 對照表未列 facebook-comment-picker,需 Sean 補 Notion page id
+
+
+---
+
+## Production Deployment (2026-08-09 完成)
+
+- **Production URL**: https://fb-giveaway-v2.vercel.app
+- **Deployment ID**: `dpl_7pvi4oRavHA56gdaogDgfBrRnLtC`
+- **Vercel project**: `prj_IP8V3SY1ZyD5DlpTm4QTHjueAdSo` (fb-giveaway-v2)
+- **Source**: CLI `npx vercel deploy --prod --yes`
+- **State**: READY + PROMOTED
+- **Alias assigned**: 1786216111726
+- **Lambda runtime stats**: `{"nodejs": 9}`（9 個 serverless functions, < 12 個 Hobby plan 限制）
+- **Aligned SHA**: `24cba92a9fe166aea4b9177ac52565e07ea2619d` (Local HEAD = GitHub HEAD = Vercel production SHA)
+
+### Production HTTP 驗證
+
+| Endpoint | Status | 結果 |
+|---|---|---|
+| GET / | 200 | Vite SPA HTML 正常 |
+| GET /api/facebook/parse-post?url=...Coca-ColaTW/posts/123456789012345 | 200 | postId 解析正確 |
+| GET /api/facebook/parse-post?url=...groups/123/posts/456 | 200 | postId 解析正確 |
+| GET /api/facebook/parse-post?url=not-a-fb-url | 422 | 正確錯誤處理 |
+| GET /api/facebook/accounts | 400 | Missing access token |
+| GET /api/facebook/page-posts | 400 | Missing pageId or token |
+| GET /api/facebook/page-comments | 400 | Missing postId or token |
+| GET /api/facebook/auth | 500 | FACEBOOK_APP_ID not configured (**需 Sean 設定**) |
+| GET /api/draw | 405 | Method not allowed (POST only) |
+
+### Production JS bundle 驗證
+
+- `https://fb-giveaway-v2.vercel.app/assets/index-_6qUyu7p.js` (180.5 KB)
+- ✓ 包含 `/api/facebook/accounts` reference
+- ✓ 包含 `pages_show_list` OAuth scope
+- ✓ 包含 Graph v19.0
+- ✗ 無 v18.0 殘留
+
+### 本 sprint 4 個 api 檔案刪除 (Hobby plan 12-function 限制)
+
+- `api/fb-auth.js` (與 `api/facebook/auth.js` 重複)
+- `api/fb-callback.js` (與 `api/facebook/callback.js` 重複)
+- `api/fb-comments.js` (與 `api/facebook/page-comments.js` 重複)
+- `api/facebook/comments.js` (舊版, 與 `page-comments.js` 重複)
+
+從 13 個 api → 9 個 api, 過 12 限制。
