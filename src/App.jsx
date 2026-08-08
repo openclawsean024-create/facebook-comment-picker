@@ -132,9 +132,8 @@ function TabImport({ postUrl, setPostUrl, postTitle, setPostTitle, commentInput,
           <button
             className="btn-primary whitespace-nowrap"
             onClick={onOpenPageSelector}
-            disabled={!fbSignedIn}
           >
-            {fbSignedIn ? '📂 從粉專選擇貼文' : '🔒 請先登入 Facebook'}
+            {fbSignedIn ? '📂 從粉專選擇貼文' : '🔑 Facebook 登入並選擇貼文'}
           </button>
         </div>
       </div>
@@ -503,9 +502,12 @@ export default function App() {
   };
 
   // ── 開啟粉專選擇 Modal ─────────────────────────────────────────────────────
+  // ── 開啟粉專選擇 Modal（沒登入時直接觸發 OAuth）─────────────────────────
   const openPageSelector = () => {
     if (!fbAccessToken) {
-      setFetchMeta('⚠️ 請先登入 Facebook 才能選擇粉專貼文。');
+      setFetchMeta('⏳ 跳轉到 Facebook 登入...');
+      // 沒登入就直接跳 OAuth,callback 會送使用者回來
+      window.location.href = '/api/facebook/auth';
       return;
     }
     setPageSelectorOpen(true);
