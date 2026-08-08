@@ -9,7 +9,7 @@ window.fbAsyncInit = () => {
     appId: import.meta.env.VITE_FB_APP_ID || 'YOUR_APP_ID',
     cookie: true,
     xfbml: true,
-    version: 'v18.0',
+    version: 'v19.0',
   });
 };
 

@@ -27,9 +27,16 @@ export default async function handler(req, res) {
   // Store state in cookie (30 min expiry)
   res.setHeader('Set-Cookie', `fb_oauth_state=${state}; HttpOnly; SameSite=Lax; Max-Age=1800; Path=/`);
 
-  const scopes = ['pages_read_engagement', 'public_profile', 'email'].join(',');
+  // ✅ scope 需包含 pages_show_list 才能列出我管理的粉專 + pages_read_engagement 拉貼文+留言
+  //   - 個人開發者 + 自己管理的粉專 不需要 App Review（user-level token 拿得到）
+  const scopes = [
+    'pages_show_list',
+    'pages_read_engagement',
+    'public_profile',
+    'email',
+  ].join(',');
 
-  const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth');
+  const authUrl = new URL('https://www.facebook.com/v19.0/dialog/oauth');
   authUrl.searchParams.set('client_id', appId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('scope', scopes);

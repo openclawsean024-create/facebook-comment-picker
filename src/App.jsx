@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import PageSelectorModal from './components/PageSelectorModal';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'fb_comments_v1';
@@ -114,9 +115,30 @@ function Stepper({ currentStep }) {
 
 // ── Tab 1: Import ───────────────────────────────────────────────────────────
 function TabImport({ postUrl, setPostUrl, postTitle, setPostTitle, commentInput, setCommentInput,
-  fetchMeta, loadingFetch, onFetch, onLoadSample, onCsvImport }) {
+  fetchMeta, loadingFetch, onFetch, onLoadSample, onCsvImport, onOpenPageSelector, fbSignedIn }) {
   return (
     <div className="space-y-5">
+      {/* FB OAuth + Page Selector */}
+      <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-black text-warning">🦋 一鍵從 Facebook 粉專抓留言</div>
+            <div className="text-xs text-warning/60 mt-1">
+              {fbSignedIn
+                ? '已登入 Facebook，可以選擇要從哪個粉專、哪篇貼文抓留言'
+                : '登入 Facebook 後，選擇粉專與貼文後自動匯入留言'}
+            </div>
+          </div>
+          <button
+            className="btn-primary whitespace-nowrap"
+            onClick={onOpenPageSelector}
+            disabled={!fbSignedIn}
+          >
+            {fbSignedIn ? '📂 從粉專選擇貼文' : '🔒 請先登入 Facebook'}
+          </button>
+        </div>
+      </div>
+
       {/* Post URL */}
       <div>
         <label className="mb-2 block text-sm font-bold text-warning">Facebook 公開貼文網址</label>
@@ -438,59 +460,65 @@ export default function App() {
   const [fbUser, setFbUser] = useState(null);
   const [fbAccessToken, setFbAccessToken] = useState(null);
   const [fbLoading, setFbLoading] = useState(false);
+  const [pageSelectorOpen, setPageSelectorOpen] = useState(false);
   const timerRef = useRef(null);
 
-  // ── FB OAuth check ────────────────────────────────────────────────────────
+  // ── FB OAuth: 從 serverless callback 回傳的 ?fb_token= 讀取（base64 JSON）────
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (window.FB) {
-        FB.getLoginStatus((response) => {
-          if (response.status === 'connected') {
-            fetchFbUserInfo(response.authResponse.accessToken);
-          }
-        });
-        clearInterval(interval);
+    const params = new URLSearchParams(window.location.search);
+    const fbTokenB64 = params.get('fb_token');
+    if (fbTokenB64) {
+      try {
+        const decoded = JSON.parse(atob(decodeURIComponent(fbTokenB64)));
+        if (decoded.accessToken && decoded.user) {
+          setFbAccessToken(decoded.accessToken);
+          setFbUser({
+            name: decoded.user.name,
+            id: decoded.user.id,
+            email: decoded.user.email,
+            picture: decoded.user.picture,
+          });
+          setFetchMeta(`✅ Facebook 登入成功（${decoded.user.name}）！現在可以選擇要抓取留言的粉專貼文。`);
+        }
+      } catch (err) {
+        setFetchMeta(`❌ Facebook OAuth callback 解析失敗：${err.message}`);
       }
-    }, 300);
-    return () => clearInterval(interval);
+      // 清掉 URL 上的 ?fb_token= 避免重新整理時重複處理
+      const url = new URL(window.location.href);
+      url.searchParams.delete('fb_token');
+      window.history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams}` : ''));
+    }
   }, []);
 
-  const fetchFbUserInfo = (accessToken) => {
-    setFbLoading(true);
-    FB.api('/me', { fields: 'name,picture', access_token: accessToken }, (resp) => {
-      if (!resp.error) {
-        setFbUser({ name: resp.name, picture: resp.picture?.data?.url });
-        setFbAccessToken(accessToken);
-      }
-      setFbLoading(false);
-    });
-  };
-
   const handleFbLogin = () => {
-    if (!window.FB) { setFetchMeta('Facebook SDK 尚未載入，請稍後再試。'); return; }
     setFbLoading(true);
-    FB.login(
-      (response) => {
-        if (response.authResponse) {
-          fetchFbUserInfo(response.authResponse.accessToken);
-          setFetchMeta('Facebook 登入成功！現在可以選擇要抓取留言的粉專貼文。');
-        } else {
-          setFetchMeta('Facebook 登入已取消或失敗。');
-          setFbLoading(false);
-        }
-      },
-      { scope: 'pages_read_engagement,public_profile,email', return_scopes: true }
-    );
+    // 走 serverless OAuth，會 redirect 到 Facebook，callback 回來帶 token
+    window.location.href = '/api/facebook/auth';
   };
 
   const handleFbLogout = () => {
-    if (window.FB) {
-      FB.logout(() => {
-        setFbUser(null);
-        setFbAccessToken(null);
-        setFetchMeta('已登出 Facebook。');
-      });
+    setFbUser(null);
+    setFbAccessToken(null);
+    setFetchMeta('已登出 Facebook。');
+  };
+
+  // ── 開啟粉專選擇 Modal ─────────────────────────────────────────────────────
+  const openPageSelector = () => {
+    if (!fbAccessToken) {
+      setFetchMeta('⚠️ 請先登入 Facebook 才能選擇粉專貼文。');
+      return;
     }
+    setPageSelectorOpen(true);
+  };
+
+  // ── 從粉專選擇確認後,把留言塞回 commentInput ─────────────────────────────
+  const handlePageSelectorConfirm = (payload) => {
+    const lines = payload.comments.map(c => `${c.name} | ${c.comment}`);
+    setCommentInput(lines.join('\n'));
+    setPostUrl(payload.postUrl || '');
+    setPostTitle(payload.postTitle || `${payload.pageName} 活動`);
+    setPageSelectorOpen(false);
+    setFetchMeta(`✅ 已從「${payload.pageName}」導入 ${payload.comments.length} 筆留言（${payload.postMessage.slice(0, 30)}...）。可以直接進入「設定條件」開始抽獎。`);
   };
 
   // ── CSV import via file input ──────────────────────────────────────────────
@@ -804,6 +832,8 @@ export default function App() {
               onFetch={fetchComments}
               onLoadSample={loadSample}
               onCsvImport={handleCsvImport}
+              onOpenPageSelector={openPageSelector}
+              fbSignedIn={!!fbAccessToken}
             />
           )}
           {currentStep === 2 && (
@@ -902,6 +932,14 @@ export default function App() {
         postTitle={postTitle}
         onRevealNext={revealNext}
         onFinish={finishPresentation}
+      />
+
+      {/* Facebook 粉專選擇 Modal */}
+      <PageSelectorModal
+        isOpen={pageSelectorOpen}
+        accessToken={fbAccessToken}
+        onClose={() => setPageSelectorOpen(false)}
+        onConfirm={handlePageSelectorConfirm}
       />
     </div>
   );

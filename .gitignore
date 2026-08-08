@@ -2,3 +2,8 @@ node_modules/
 dist/
 .vercel/
 .vercel
+
+# Secrets & env (do NOT commit)
+.env
+.env.*
+!.env.example

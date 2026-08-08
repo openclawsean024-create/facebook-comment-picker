@@ -56,7 +56,7 @@ export default async function handler(req, res) {
   // Step 1：將 code 換成 access_token
   let accessToken = '';
   try {
-    const tokenUrl = `https://graph.facebook.com/v18.0/oauth/access_token`;
+    const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token`;
     const tokenParams = new URLSearchParams({
       client_id: appId,
       client_secret: appSecret,
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
       access_token: accessToken,
       fields: 'id,name,picture,email',
     });
-    const userResponse = await fetch(`https://graph.facebook.com/v18.0/me?${userParams.toString()}`);
+    const userResponse = await fetch(`https://graph.facebook.com/v19.0/me?${userParams.toString()}`);
     fbUser = await userResponse.json();
 
     if (fbUser.error) {

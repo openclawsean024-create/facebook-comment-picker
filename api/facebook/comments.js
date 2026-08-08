@@ -84,7 +84,7 @@ async function fetchAllComments(postId, accessToken, limit = 100) {
     if (after) params.set('after', after);
 
     const resp = await fetch(
-      `https://graph.facebook.com/v18.0/${postId}/comments?${params}`,
+      `https://graph.facebook.com/v19.0/${postId}/comments?${params}`,
       { headers: { Accept: 'application/json' } }
     );
 
@@ -124,7 +124,7 @@ async function fetchAllComments(postId, accessToken, limit = 100) {
   let postTitle = null;
   try {
     const postResp = await fetch(
-      `https://graph.facebook.com/v18.0/${postId}?access_token=${accessToken}&fields=id,message,story,created_time,permalink_url`
+      `https://graph.facebook.com/v19.0/${postId}?access_token=${accessToken}&fields=id,message,story,created_time,permalink_url`
     );
     if (postResp.ok) {
       const postInfo = await postResp.json();

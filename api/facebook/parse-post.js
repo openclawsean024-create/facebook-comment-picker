@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
+  // v19 解析
   const postId = extractPostId(url);
   if (!postId) {
     return res.status(422).json({

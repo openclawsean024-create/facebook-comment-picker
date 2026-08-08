@@ -94,7 +94,7 @@ async function fetchPostInfo(postId, accessToken) {
     access_token: accessToken,
     fields: 'id,message,story,created_time,full_picture,permalink_url',
   });
-  const resp = await fetch(`https://graph.facebook.com/v18.0/${postId}?${params}`);
+  const resp = await fetch(`https://graph.facebook.com/v19.0/${postId}?${params}`);
   if (!resp.ok) return null;
   return resp.json();
 }
@@ -124,7 +124,7 @@ async function fetchAllComments(postId, accessToken, limit = 100) {
     });
     if (after) params.set('after', after);
 
-    const resp = await fetch(`https://graph.facebook.com/v18.0/${postId}/comments?${params}`);
+    const resp = await fetch(`https://graph.facebook.com/v19.0/${postId}/comments?${params}`);
     if (!resp.ok) {
       const body = await resp.text();
       if (resp.status === 401 || resp.status === 403) {
