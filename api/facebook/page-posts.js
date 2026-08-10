@@ -1,3 +1,5 @@
+import { rateLimitResponse } from '../_lib/rate-limit.js';
+
 /**
  * GET /api/facebook/page-posts
  * 列出指定粉專的近期貼文（最多 100 篇）
@@ -11,11 +13,17 @@
  *   { ok, posts: [{ id, message, created_time, permalink_url, full_picture, reactions, comments }] }
  */
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
+  // Rate limit: 60 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 60, windowMs: 60000, bucket: 'page-posts' });
+  if (rl) return rl;
+
+
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const { pageId, token } = req.query;

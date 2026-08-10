@@ -1,3 +1,5 @@
+import { rateLimitResponse } from '../_lib/rate-limit.js';
+
 /**
  * POST /api/import/csv
  * 手動 CSV 匯入：解析 CSV 或純文字格式的留言名單
@@ -16,11 +18,17 @@
  * }
  */
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
+  // Rate limit: 30 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 30, windowMs: 60000, bucket: 'csv' });
+  if (rl) return rl;
+
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const body = req.body || {};

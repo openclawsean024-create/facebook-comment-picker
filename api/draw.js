@@ -1,3 +1,5 @@
+import { rateLimitResponse } from './_lib/rate-limit.js';
+
 /**
  * POST /api/draw
  * 執行抽獎演算法，回傳中獎名單
@@ -16,6 +18,12 @@
  * }
  */
 export default async function handler(req, res) {
+  // Rate limit: 60 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 60, windowMs: 60000, bucket: 'draw' });
+  if (rl) return rl;
+
+
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

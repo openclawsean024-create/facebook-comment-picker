@@ -1,4 +1,12 @@
+import { rateLimitResponse } from './_lib/rate-limit.js';
+
 export default async function handler(req, res) {
+  // Rate limit: 30 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 30, windowMs: 60000, bucket: 'fetch-comments' });
+  if (rl) return rl;
+
+
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

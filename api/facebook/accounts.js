@@ -1,3 +1,5 @@
+import { rateLimitResponse } from '../_lib/rate-limit.js';
+
 /**
  * GET /api/facebook/accounts
  * 列出當前 FB user 管理的粉絲專頁（pages）
@@ -12,11 +14,17 @@
  *      範圍需包含 pages_show_list（讓使用者看到自己管理的粉專）
  */
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
+  // Rate limit: 30 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 30, windowMs: 60000, bucket: 'accounts' });
+  if (rl) return rl;
+
+
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const accessToken = req.query.token || req.headers['x-fb-token'];

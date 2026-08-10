@@ -1,3 +1,5 @@
+import { rateLimitResponse } from '../_lib/rate-limit.js';
+
 /**
  * GET /api/facebook/page-comments
  * 用 page-level access_token 抓取指定粉專貼文的所有留言
@@ -12,11 +14,17 @@
  *   { ok, postId, postTitle, extractedCount, pagesFetched, comments: [...] }
  */
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
+  // Rate limit: 30 req/60s per IP
+  const rl = rateLimitResponse(req, res, { maxRequests: 30, windowMs: 60000, bucket: 'page-comments' });
+  if (rl) return rl;
+
+
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const { postId, token } = req.query;

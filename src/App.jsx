@@ -1,87 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageSelectorModal from './components/PageSelectorModal';
+import {
+  parseList,
+  parsePrizes,
+  expandPrizeSlots,
+  parseComments,
+  shuffle,
+  applyFilters,
+} from './lib/lottery';
+import { iconSvgs } from './lib/icons';
+import {
+  STORAGE_KEY,
+  SAMPLE_URL,
+  SAMPLE_COMMENTS,
+  TABS,
+  DEFAULT_PRIZE_INPUT,
+  DEFAULT_FETCH_META,
+} from './lib/constants';
 
-// ── Constants ────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'fb_comments_v1';
-const SAMPLE_URL = 'https://www.facebook.com/share/p/1KaANBEDa6/';
-const SAMPLE_COMMENTS = `王小明 | 我要抽大獎
-陳小華 | Logitech 福袋買起來
-林小美 | 我要抽雲端遊戲掌機
-王小明 | 再留一次
-張阿強 | 測試留言
-李小芳 | 我要抽大獎
-周大成 | 取消參加
-黃小琪 | 好想要這個禮物`;
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const parseList = (value) => value.split(',').map((v) => v.trim()).filter(Boolean);
-
-function parsePrizes(raw) {
-  return raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((line) => {
-    const parts = line.split('|').map((p) => p.trim()).filter(Boolean);
-    return { name: parts[0] || '未命名獎項', count: Math.max(1, Number(parts[1] || 1)) };
-  });
-}
-
-function expandPrizeSlots(prizes) {
-  return prizes.flatMap((p) => Array.from({ length: p.count }, () => p.name));
-}
-
-function parseComments(raw) {
-  return raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((line) => {
-    const pipe = line.split('|').map((p) => p.trim()).filter(Boolean);
-    if (pipe.length >= 2) return { name: pipe[0], comment: pipe.slice(1).join(' | '), age: '' };
-    const comma = line.split(',').map((p) => p.trim()).filter(Boolean);
-    if (comma.length >= 2) return { name: comma[0], comment: comma.slice(1).join(', '), age: '' };
-    return { name: line, comment: '', age: '' };
-  });
-}
-
-function hashString(str) {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i += 1) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return (h >>> 0) || 123456789;
-}
-
-function mulberry32(seed) {
-  return () => {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffle(items, seedText) {
-  const result = [...items];
-  const rand = seedText ? mulberry32(hashString(seedText)) : Math.random;
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rand() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-// ── Icons ───────────────────────────────────────────────────────────────────
-const iconSvgs = {
-  spark: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2z" /></svg>,
-  bolt: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" /></svg>,
-  shield: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z" /></svg>,
-  trophy: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 3h8v3a4 4 0 01-8 0V3z" /><path d="M6 6H4a2 2 0 000 4h2" /><path d="M18 6h2a2 2 0 010 4h-2" /><path d="M12 10v5" /><path d="M9 21h6" /><path d="M10 15h4v3h-4z" /></svg>,
-  upload: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>,
-  filter: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" /></svg>,
-  download: <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>,
-};
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
-const TABS = [
-  { key: 'import', label: '📥 匯入留言', icon: '📥' },
-  { key: 'conditions', label: '🎯 設定條件', icon: '🎯' },
-  { key: 'results', label: '🎉 開獎結果', icon: '🎉' },
-];
+
 
 // ── Stepper progress ─────────────────────────────────────────────────────────
 function Stepper({ currentStep }) {
@@ -441,7 +380,7 @@ export default function App() {
   const [requiredKeywords, setRequiredKeywords] = useState('');
   const [blacklistNames, setBlacklistNames] = useState('');
   const [blacklistKeywords, setBlacklistKeywords] = useState('');
-  const [prizeInput, setPrizeInput] = useState('頭獎 | 1\n貳獎 | 2\n參加獎 | 3');
+  const [prizeInput, setPrizeInput] = useState(DEFAULT_PRIZE_INPUT);
   const [winners, setWinners] = useState([]);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [stageName, setStageName] = useState('按下開始揭曉');
@@ -451,7 +390,7 @@ export default function App() {
   const [presentationCursor, setPresentationCursor] = useState(0);
   const [presentationPool, setPresentationPool] = useState([]);
   const [loadingFetch, setLoadingFetch] = useState(false);
-  const [fetchMeta, setFetchMeta] = useState('💡 請貼上 Facebook 公開貼文網址，或直接在手動欄位粘貼留言名單。');
+  const [fetchMeta, setFetchMeta] = useState(DEFAULT_FETCH_META);
   const [drawSessions, setDrawSessions] = useState(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }
@@ -590,32 +529,12 @@ export default function App() {
   const parsedEntries = useMemo(() => parseComments(commentInput), [commentInput]);
 
   const filteredEntries = useMemo(() => {
-    const required = parseList(requiredKeywords).map(v => v.toLowerCase());
-    const excluded = parseList(excludeKeywords).map(v => v.toLowerCase());
-    const blackNames = parseList(blacklistNames).map(v => v.toLowerCase());
-    const blackKeywords = parseList(blacklistKeywords).map(v => v.toLowerCase());
-    const seen = new Set();
-
-    return parsedEntries.filter((item) => {
-      const name = item.name.trim();
-      const comment = (item.comment || '').trim();
-      const combined = `${name} ${comment}`.toLowerCase();
-      const nameKey = name.toLowerCase();
-      const commentKey = comment.toLowerCase();
-
-      if (blackNames.includes(nameKey)) return false;
-      if (excluded.some(kw => combined.includes(kw))) return false;
-      if (blackKeywords.some(kw => combined.includes(kw))) return false;
-      if (required.length && !required.some(kw => combined.includes(kw))) return false;
-
-      let key = nameKey;
-      if (dedupeMode === 'comment') key = commentKey;
-      if (dedupeMode === 'name-comment') key = `${nameKey}__${commentKey}`;
-      if (dedupeMode !== 'none') {
-        if (seen.has(key)) return false;
-        seen.add(key);
-      }
-      return true;
+    return applyFilters(parsedEntries, {
+      excludeKeywords,
+      requiredKeywords,
+      blacklistNames,
+      blacklistKeywords,
+      dedupeMode,
     });
   }, [parsedEntries, requiredKeywords, excludeKeywords, blacklistNames, blacklistKeywords, dedupeMode]);
 
