@@ -1,5 +1,7 @@
 import { rateLimitResponse } from './_lib/rate-limit.js';
 
+import { extractPostId } from './facebook/parse-post.js';
+
 export default async function handler(req, res) {
   // Rate limit: 30 req/60s per IP
   const rl = rateLimitResponse(req, res, { maxRequests: 30, windowMs: 60000, bucket: 'fetch-comments' });
@@ -148,40 +150,6 @@ async function fetchCommentsRapidApi(postUrl, apiKey) {
  * Supports: facebook.com/username/posts/123, facebook.com/photo?fbid=123,
  *          facebook.com/groups/x/posts/123, facebook.com/story.php?story_fbid=...
  */
-function extractPostId(url) {
-  // Normalize: strip trailing slash and query string for parsing
-  const clean = url.replace(/\?.*$/, '').replace(/\/$/, '');
-
-  // Pattern 1: /photo?fbid=123 or /photo.php?fbid=123
-  const fbidMatch = clean.match(/facebook\.com\/[^/]+\/(?:photo|video|story)\.php\?fbid=(\d+)/i);
-  if (fbidMatch) return fbidMatch[1];
-
-  // Pattern 2: /username/posts/123456
-  const postsMatch = clean.match(/facebook\.com\/([^/]+)\/posts\/(\d+)/i);
-  if (postsMatch) return postsMatch[2];
-
-  // Pattern 3: /username/photos/123456
-  const photosMatch = clean.match(/facebook\.com\/([^/]+)\/photos\/(\d+)/i);
-  if (photosMatch) return photosMatch[2];
-
-  // Pattern 4: /groups/123456/posts/789
-  const groupMatch = clean.match(/facebook\.com\/groups\/(\d+)\/posts\/(\d+)/i);
-  if (groupMatch) return groupMatch[2];
-
-  // Pattern 5: /story.php?story_fbid=123456&...
-  const storyMatch = clean.match(/story_fbid=(\d+)/i);
-  if (storyMatch) return storyMatch[1];
-
-  // Pattern 6: /reel/123456 or /watch/?v=123
-  const reelMatch = clean.match(/facebook\.com\/(?:reel|watch)\/(\d+)/i);
-  if (reelMatch) return reelMatch[1];
-
-  // Pattern 7: bare numeric ID in path
-  const bareMatch = clean.match(/facebook\.com\/(\d{10,})/);
-  if (bareMatch) return bareMatch[1];
-
-  return null;
-}
 
 /**
  * Fetch all comments from a Facebook post via Graph API with pagination.

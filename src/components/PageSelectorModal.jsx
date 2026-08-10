@@ -118,6 +118,16 @@ export default function PageSelectorModal({ isOpen, accessToken, onClose, onConf
     onClose();
   };
 
+  // ── ESC 鍵關閉 ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, loadingPages, loadingPosts, loadingComments]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleConfirm = () => {
     if (!selectedPage || !selectedPost || comments.length === 0) return;
     onConfirm({
