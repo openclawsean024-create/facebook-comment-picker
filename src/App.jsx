@@ -401,37 +401,57 @@ export default function App() {
   const [pageSelectorOpen, setPageSelectorOpen] = useState(false);
   const timerRef = useRef(null);
 
-  // ── FB OAuth: 從 serverless callback 回傳的 ?fb_token= 讀取（base64 JSON）────
+  // ── FB OAuth: 用前端 FB JS SDK (跟 GG90052 comment_helper 一樣) ────────
+  //  - 不再用 serverless callback
+  //  - redirect_uri = 當前頁面 URL (Vercel 網域)
+  //  - 用 FB.login() 取得 accessToken 直接打 Graph API
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const fbTokenB64 = params.get('fb_token');
-    if (fbTokenB64) {
-      try {
-        const decoded = JSON.parse(atob(decodeURIComponent(fbTokenB64)));
-        if (decoded.accessToken && decoded.user) {
-          setFbAccessToken(decoded.accessToken);
-          setFbUser({
-            name: decoded.user.name,
-            id: decoded.user.id,
-            email: decoded.user.email,
-            picture: decoded.user.picture,
-          });
-          setFetchMeta(`✅ Facebook 登入成功（${decoded.user.name}）！現在可以選擇要抓取留言的粉專貼文。`);
+    if (!window.FB) return; // SDK 還沒載入
+    try {
+      window.FB.getLoginStatus((response) => {
+        if (response.status === 'connected') {
+          // 已登入,直接用 token
+          setFbAccessToken(response.authResponse.accessToken);
+          fetchFbUserInfoFromGraph(response.authResponse.accessToken);
         }
-      } catch (err) {
-        setFetchMeta(`❌ Facebook OAuth callback 解析失敗：${err.message}`);
-      }
-      // 清掉 URL 上的 ?fb_token= 避免重新整理時重複處理
-      const url = new URL(window.location.href);
-      url.searchParams.delete('fb_token');
-      window.history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams}` : ''));
-    }
+      });
+    } catch (_) { /* SDK not ready yet */ }
   }, []);
 
+  const fetchFbUserInfoFromGraph = (accessToken) => {
+    if (!window.FB) return;
+    window.FB.api('/me', { fields: 'id,name,picture,email', access_token: accessToken }, (resp) => {
+      if (!resp.error) {
+        setFbUser({ name: resp.name, picture: resp.picture?.data?.url, id: resp.id, email: resp.email });
+      }
+    });
+  };
+
   const handleFbLogin = () => {
+    if (!window.FB) {
+      setFetchMeta('❌ Facebook SDK 尚未載入，請稍後再試。');
+      return;
+    }
     setFbLoading(true);
-    // 走 serverless OAuth，會 redirect 到 Facebook，callback 回來帶 token
-    window.location.href = '/api/facebook/auth';
+    // 跟 GG90052 一樣:用前端 FB JS SDK
+    // redirect_uri = 當前頁面 URL (Vercel),需要事先在 Meta App 設 Valid OAuth Redirect URIs
+    window.FB.login(
+      (response) => {
+        if (response.authResponse) {
+          setFbAccessToken(response.authResponse.accessToken);
+          fetchFbUserInfoFromGraph(response.authResponse.accessToken);
+          setFetchMeta(`✅ Facebook 登入成功（${response.authResponse.userID}）！現在可以選擇要抓取留言的粉專貼文。`);
+        } else {
+          setFetchMeta('Facebook 登入已取消或失敗。');
+        }
+        setFbLoading(false);
+      },
+      {
+        scope: 'pages_show_list,pages_read_engagement,public_profile,email',
+        return_scopes: true,
+        // redirect_uri 不指定,FB SDK 用 window.location.href 當前頁面
+      }
+    );
   };
 
   const handleFbLogout = () => {
@@ -444,9 +464,8 @@ export default function App() {
   // ── 開啟粉專選擇 Modal（沒登入時直接觸發 OAuth）─────────────────────────
   const openPageSelector = () => {
     if (!fbAccessToken) {
-      setFetchMeta('⏳ 跳轉到 Facebook 登入...');
-      // 沒登入就直接跳 OAuth,callback 會送使用者回來
-      window.location.href = '/api/facebook/auth';
+      // 條商：目前 FB.login() (跟 GG90052 一樣用前端 SDK)
+      handleFbLogin();
       return;
     }
     setPageSelectorOpen(true);

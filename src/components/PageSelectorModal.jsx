@@ -50,7 +50,10 @@ export default function PageSelectorModal({ isOpen, accessToken, onClose, onConf
       setLoadingPages(true);
       setPagesError(null);
       try {
-        const resp = await fetch(`/api/facebook/accounts?token=${encodeURIComponent(accessToken)}`);
+        // 直接打 Graph API (跟 GG90052 一樣用前端 SDK)
+        const resp = await fetch(
+          `https://graph.facebook.com/v19.0/me/accounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,category,access_token,picture{url},tasks&limit=100`
+        );
         const data = await resp.json();
         if (cancelled) return;
         if (!resp.ok || !data.ok) {
@@ -78,7 +81,9 @@ export default function PageSelectorModal({ isOpen, accessToken, onClose, onConf
     setSelectedPost(null);
     setComments([]);
     try {
-      const resp = await fetch(`/api/facebook/page-posts?pageId=${page.id}&token=${encodeURIComponent(page.accessToken)}&limit=25`);
+      const resp = await fetch(
+        `https://graph.facebook.com/v19.0/${page.id}/posts?access_token=${encodeURIComponent(page.accessToken)}&fields=id,message,story,created_time,permalink_url,full_picture,reactions.summary(true).limit(0),comments.summary(true).limit(0),shares&limit=25`
+      );
       const data = await resp.json();
       if (!resp.ok || !data.ok) {
         setPostsError(data.error || '拉取貼文失敗');
@@ -99,8 +104,52 @@ export default function PageSelectorModal({ isOpen, accessToken, onClose, onConf
     setCommentsError(null);
     setComments([]);
     try {
-      const resp = await fetch(`/api/facebook/page-comments?postId=${post.id}&token=${encodeURIComponent(page.accessToken)}&limit=100&maxPages=20`);
-      const data = await resp.json();
+      // 這部分較複雜:Graph API 不支援 maxPages 一次拿全部
+      // 改成自己處理分頁 (前端 fetch loop)
+      const allComments = [];
+      let after = null;
+      let pageNum = 0;
+      const MAX_PAGES = 20;
+      const limit = 100;
+      while (pageNum < MAX_PAGES) {
+        pageNum += 1;
+        const url = new URL(`https://graph.facebook.com/v19.0/${post.id}/comments`);
+        url.searchParams.set('access_token', page.accessToken);
+        url.searchParams.set('limit', String(limit));
+        url.searchParams.set('filter', 'toplevel');
+        url.searchParams.set('fields', 'id,message,created_time,from{id,name,picture},like_count,comment_count,parent{id}');
+        if (after) url.searchParams.set('after', after);
+        const r = await fetch(url.toString());
+        const d = await r.json();
+        if (d.error) throw new Error(d.error.message);
+        if (!d.data?.length) break;
+        for (const item of d.data) {
+          if (!item.from || !item.message) continue;
+          allComments.push({
+            id: item.id,
+            name: item.from.name || 'Unknown',
+            authorId: item.from.id || '',
+            picture: item.from.picture?.data?.url || null,
+            comment: item.message,
+            createdAt: item.created_time,
+            likeCount: item.like_count || 0,
+            replyCount: item.comment_count || 0,
+            isReply: !!(item.parent && item.parent.id !== post.id),
+          });
+        }
+        if (d.paging?.cursors?.after) after = d.paging.cursors.after;
+        else break;
+      }
+      const data = {
+        ok: true,
+        source: 'facebook_graph_api',
+        postId: post.id,
+        postTitle: null,
+        extractedCount: allComments.length,
+        pagesFetched: pageNum,
+        comments: allComments,
+        note: `已用 page-level token 抓取 ${allComments.length} 筆留言`,
+      };
       if (!resp.ok || !data.ok) {
         setCommentsError(data.error || '拉取留言失敗');
         return;
