@@ -360,8 +360,8 @@ function parseFacebookMarkdown(markdown, fallbackUrl) {
     for (let j = i + 1; j < Math.min(i + 20, lines.length); j++) {
       const probe = lines[j].trim();
       if (!probe) continue;
-      if (/^\*/.test(probe) && /\[[^\]]+\]\([^\)]*comment_id=/i.test(probe)) {
-        const ageMatch = probe.match(/\[([^\]]+)\]\([^\)]*comment_id=/i);
+      if (/^\*/.test(probe) && /\[[^\]]+\]\([^)]*comment_id=/i.test(probe)) {
+        const ageMatch = probe.match(/\[([^\]]+)\]\([^)]*comment_id=/i);
         if (ageMatch) age = cleanup(ageMatch[1]);
         break;
       }

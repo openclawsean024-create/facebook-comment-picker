@@ -175,7 +175,7 @@ export default function PageSelectorModal({ isOpen, accessToken, onClose, onConf
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, loadingPages, loadingPosts, loadingComments]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, loadingPages, loadingPosts, loadingComments]); // exhaustive-deps intentionally limited
 
   const handleConfirm = () => {
     if (!selectedPage || !selectedPost || comments.length === 0) return;
